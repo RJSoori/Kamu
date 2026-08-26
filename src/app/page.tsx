@@ -1,12 +1,28 @@
 import Image from "next/image";
-import { getRestaurants, type Restaurant } from "@/lib/data/restaurants";
+import Link from "next/link";
+import {
+  getRestaurantFilterOptions,
+  getRestaurants,
+  type Restaurant,
+} from "@/lib/data/restaurants";
+import { RestaurantFilters } from "@/components/RestaurantFilters";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ area?: string; cuisine?: string }>;
+}) {
+  const { area, cuisine } = await searchParams;
+
   let restaurants: Restaurant[] = [];
+  let filterOptions = { areas: [] as string[], cuisines: [] as string[] };
   let errorMessage: string | null = null;
 
   try {
-    restaurants = await getRestaurants();
+    [restaurants, filterOptions] = await Promise.all([
+      getRestaurants({ area, cuisine }),
+      getRestaurantFilterOptions(),
+    ]);
   } catch (error) {
     errorMessage =
       error instanceof Error ? error.message : "Unable to fetch restaurants.";
@@ -18,7 +34,7 @@ export default async function Home() {
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="space-y-4">
             <div className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
-              Phase 1 · Browse restaurants
+              Phase 2 · Browse restaurants
             </div>
             <div>
               <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -31,6 +47,13 @@ export default async function Home() {
             </div>
           </div>
         </div>
+
+        <RestaurantFilters
+          areas={filterOptions.areas}
+          cuisines={filterOptions.cuisines}
+          selectedArea={area}
+          selectedCuisine={cuisine}
+        />
 
         <section className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
           <div className="space-y-6">
@@ -51,16 +74,18 @@ export default async function Home() {
             ) : restaurants.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-slate-700">
                 <p className="text-base">
-                  No restaurants found yet. Add rows to the `restaurants` table
-                  in Supabase.
+                  {area || cuisine
+                    ? "No restaurants match these filters."
+                    : "No restaurants found yet. Add rows to the `restaurants` table in Supabase."}
                 </p>
               </div>
             ) : (
               <div className="grid gap-4">
                 {restaurants.map((restaurant) => (
-                  <article
+                  <Link
                     key={restaurant.id}
-                    className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    href={`/restaurants/${restaurant.id}`}
+                    className="block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
@@ -91,7 +116,7 @@ export default async function Home() {
                         />
                       ) : null}
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             )}
@@ -101,16 +126,15 @@ export default async function Home() {
             <div>
               <h2 className="text-xl font-semibold">Next steps</h2>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>
-                  Build a mood search input and query matching restaurants
-                </li>
-                <li>Add restaurant detail pages</li>
+                <li>Build a mood search input and query matching restaurants</li>
+                <li>Add a map view once a Mapbox token is connected</li>
                 <li>Enable Supabase Auth and bucket lists</li>
               </ul>
             </div>
             <div className="mt-6 rounded-3xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
               This page uses a server-side Supabase query, so the data is
-              fetched securely and statically for the first render.
+              fetched securely for every request (filters opt the page into
+              dynamic rendering).
             </div>
           </aside>
         </section>
