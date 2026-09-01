@@ -8,7 +8,7 @@
 -- won't duplicate rows. Replace/remove these once real listings from
 -- Phase 1 site visits are in.
 
-do $$
+do $seed$
 declare
   r_id uuid;
 begin
@@ -20,7 +20,7 @@ begin
     ) values (
       'Ceylon Leaf Cafe', 'Colombo 03', '14 Horton Place, Colombo 03',
       6.9101, 79.8571, array['Cafe', 'Sri Lankan'], '$$',
-      'Quiet garden cafe with soft lighting and deliberately slow wifi -- good for reading alone or working through the morning. Ceylon tea, short eats, popular with university students.',
+      'Quiet garden cafe with soft lighting and deliberately slow wifi; good for reading alone or working through the morning. Ceylon tea, short eats, popular with university students.',
       '{"mon":"7:30-19:00","tue":"7:30-19:00","wed":"7:30-19:00","thu":"7:30-19:00","fri":"7:30-19:00","sat":"8:00-20:00","sun":"8:00-18:00"}',
       true
     )
@@ -39,7 +39,7 @@ begin
     ) values (
       'Spice Trail Street Kitchen', 'Nugegoda', '212 High Level Road, Nugegoda',
       6.8721, 79.8890, array['Street Food', 'Sri Lankan'], '$',
-      'Loud, fast, plastic chairs on the pavement -- come hungry for cheap spicy kottu and short eats, not for a quiet conversation. Busiest right after work hours.',
+      'Loud, fast, plastic chairs on the pavement; come hungry for cheap spicy kottu and short eats, not for a quiet conversation. Busiest right after work hours.',
       '{"mon":"16:00-23:00","tue":"16:00-23:00","wed":"16:00-23:00","thu":"16:00-23:00","fri":"16:00-00:00","sat":"16:00-00:00","sun":"16:00-22:00"}',
       true
     )
@@ -58,7 +58,7 @@ begin
     ) values (
       'Lighthouse Trattoria', 'Mount Lavinia', '88 Beach Road, Mount Lavinia',
       6.8389, 79.8653, array['Italian', 'Seafood'], '$$$',
-      'Candlelit tables steps from the sand -- built for a date or an anniversary, not a quick bite. Fresh seafood pasta, slow service on purpose, sunset views if you book early.',
+      'Candlelit tables steps from the sand; built for a date or an anniversary, not a quick bite. Fresh seafood pasta, slow service on purpose, sunset views if you book early.',
       '{"mon":"18:00-23:00","tue":"18:00-23:00","wed":"18:00-23:00","thu":"18:00-23:00","fri":"18:00-23:30","sat":"18:00-23:30","sun":"12:00-15:00,18:00-23:00"}',
       true
     )
@@ -77,7 +77,7 @@ begin
     ) values (
       'Bakehouse on Kotte Road', 'Kotte', '45 Kotte Road, Kotte',
       6.8905, 79.9019, array['Bakery', 'Cafe'], '$$',
-      'Bright, minimal, good natural light for photos -- sourdough and pastries baked fresh each morning, sells out of the popular items by early afternoon. Casual, no reservations.',
+      'Bright, minimal, good natural light for photos; sourdough and pastries baked fresh each morning, sells out of the popular items by early afternoon. Casual, no reservations.',
       '{"mon":"6:30-16:00","tue":"6:30-16:00","wed":"6:30-16:00","thu":"6:30-16:00","fri":"6:30-16:00","sat":"6:30-17:00","sun":"7:00-15:00"}',
       true
     )
@@ -96,7 +96,7 @@ begin
     ) values (
       'Rajagiriya Rice & Curry House', 'Rajagiriya', '167 Nawala Road, Rajagiriya',
       6.9083, 79.8967, array['Sri Lankan'], '$',
-      'Home-style rice and curry buffet, unlimited helpings, fluorescent lights and steel tables -- built for a fast affordable lunch, not lingering. Regulars, office crowd on weekdays.',
+      'Home-style rice and curry buffet, unlimited helpings, fluorescent lights and steel tables; built for a fast affordable lunch, not lingering. Regulars, office crowd on weekdays.',
       '{"mon":"11:30-15:00","tue":"11:30-15:00","wed":"11:30-15:00","thu":"11:30-15:00","fri":"11:30-15:00","sat":"11:30-15:30","sun":"closed"}',
       true
     )
@@ -125,4 +125,4 @@ begin
       (r_id, 'Avocado Toast', 'Sourdough, chili flakes, lime', 750, 'Mains');
   end if;
 
-end $$;
+end $seed$;
