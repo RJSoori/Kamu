@@ -5,7 +5,7 @@ import {
   getRestaurants,
   type Restaurant,
 } from "@/lib/data/restaurants";
-import { RestaurantFilters } from "@/components/RestaurantFilters";
+import { RestaurantFilters } from "@/components/site/RestaurantFilters";
 
 export default async function Home({
   searchParams,

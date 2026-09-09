@@ -30,5 +30,12 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    // Deno runtime code (Supabase Edge Functions) -- remote-URL imports,
+    // .ts-extension imports, and the `Deno`/`Supabase` globals are only
+    // valid under Deno's own type checker, not tsc. Type-checked separately
+    // via `deno check` / the Supabase CLI, not this project's typecheck.
+    "supabase/functions"
+  ]
 }

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Deno runtime code (Supabase Edge Functions) -- see tsconfig.json's
+    // matching exclude for why this project's linter/typechecker skips it.
+    "supabase/functions/**",
   ]),
 ]);
 

@@ -17,12 +17,17 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z
     .string()
     .min(1, "NEXT_PUBLIC_SUPABASE_ANON_KEY is required"),
+  // Optional, unlike the two above: the app must boot without a Mapbox
+  // token (map view just degrades to a fallback -- see RestaurantMap), so
+  // this can't be a hard requirement the way Supabase's own keys are.
+  NEXT_PUBLIC_MAPBOX_TOKEN: z.string().optional(),
 });
 
 function parsePublicEnv() {
   const parsed = publicEnvSchema.safeParse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_MAPBOX_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
   });
 
   if (!parsed.success) {

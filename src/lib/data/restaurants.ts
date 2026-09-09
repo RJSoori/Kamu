@@ -24,7 +24,9 @@ export type RestaurantInput = Omit<
   is_published?: boolean;
 };
 
-const RESTAURANT_COLUMNS =
+// Exported so other data modules that join against restaurants (e.g.
+// lib/data/bucket-list.ts) request the exact same shape instead of drifting.
+export const RESTAURANT_COLUMNS =
   "id, name, area, address, latitude, longitude, cuisine_type, price_range, vibe_description, opening_hours, cover_photo_url, is_published, created_at";
 
 export interface RestaurantFilters {

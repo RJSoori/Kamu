@@ -3,6 +3,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRestaurantById } from "@/lib/data/restaurants";
 import { getMenuItemsByRestaurant, type MenuItem } from "@/lib/data/menu-items";
+import { isRestaurantSaved } from "@/lib/data/bucket-list";
+import {
+  getMyReviewForRestaurant,
+  getReviewsByRestaurant,
+  summarizeReviews,
+} from "@/lib/data/reviews";
+import { createClient } from "@/lib/supabase/server";
+import { SaveButton } from "@/components/site/SaveButton";
+import { StarRating } from "@/components/site/StarRating";
+import { ReviewForm } from "@/components/site/ReviewForm";
+import { ReviewDeleteButton } from "@/components/site/ReviewDeleteButton";
+import { RestaurantMap } from "@/components/site/RestaurantMap";
 
 const DAY_LABELS: Record<string, string> = {
   mon: "Monday",
@@ -26,9 +38,20 @@ export default async function RestaurantDetailPage({
     notFound();
   }
 
-  const menuItems = await getMenuItemsByRestaurant(id);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [menuItems, saved, reviews, myReview] = await Promise.all([
+    getMenuItemsByRestaurant(id),
+    user ? isRestaurantSaved(id) : Promise.resolve(false),
+    getReviewsByRestaurant(id),
+    user ? getMyReviewForRestaurant(id) : Promise.resolve(null),
+  ]);
   const menuByCategory = groupByCategory(menuItems);
   const openingHours = Object.entries(restaurant.opening_hours ?? {});
+  const reviewSummary = summarizeReviews(reviews);
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
@@ -66,8 +89,20 @@ export default async function RestaurantDetailPage({
                   </p>
                 ) : null}
               </div>
-              <div className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
-                {restaurant.price_range || "-"}
+              <div className="flex flex-col items-end gap-3">
+                <div className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+                  {restaurant.price_range || "-"}
+                </div>
+                {user ? (
+                  <SaveButton restaurantId={restaurant.id} initiallySaved={saved} />
+                ) : (
+                  <Link
+                    href={`/login?next=/restaurants/${restaurant.id}`}
+                    className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Log in to save
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -91,9 +126,11 @@ export default async function RestaurantDetailPage({
             ) : null}
 
             {restaurant.latitude && restaurant.longitude ? (
-              <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                Map view coming once a Mapbox token is connected (Phase 2). Coordinates on file: {restaurant.latitude}, {restaurant.longitude}.
-              </div>
+              <RestaurantMap
+                latitude={restaurant.latitude}
+                longitude={restaurant.longitude}
+                name={restaurant.name}
+              />
             ) : null}
 
             {openingHours.length > 0 ? (
@@ -151,6 +188,70 @@ export default async function RestaurantDetailPage({
                       </div>
                     ))}
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Reviews</h2>
+            {reviewSummary.count > 0 ? (
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <StarRating rating={reviewSummary.average ?? 0} />
+                <span>
+                  {reviewSummary.average?.toFixed(1)} · {reviewSummary.count}{" "}
+                  review{reviewSummary.count === 1 ? "" : "s"}
+                </span>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="mt-6">
+            {user ? (
+              <ReviewForm restaurantId={restaurant.id} existingReview={myReview} />
+            ) : (
+              <p className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+                <Link
+                  href={`/login?next=/restaurants/${restaurant.id}`}
+                  className="font-semibold text-slate-900 hover:underline"
+                >
+                  Log in
+                </Link>{" "}
+                to leave a review.
+              </p>
+            )}
+          </div>
+
+          {reviews.length === 0 ? (
+            <p className="mt-6 text-sm text-slate-600">
+              No reviews yet. Be the first.
+            </p>
+          ) : (
+            <div className="mt-6 space-y-4 divide-y divide-slate-100">
+              {reviews.map((review) => (
+                <div key={review.id} className="pt-4 first:pt-0">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <StarRating rating={review.rating} />
+                      <p className="mt-1 text-xs text-slate-400">
+                        {new Date(review.created_at).toLocaleDateString()}
+                        {review.customer_id === user?.id ? " · Your review" : ""}
+                      </p>
+                    </div>
+                    {review.customer_id === user?.id ? (
+                      <ReviewDeleteButton
+                        reviewId={review.id}
+                        restaurantId={restaurant.id}
+                      />
+                    ) : null}
+                  </div>
+                  {review.review_text ? (
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      {review.review_text}
+                    </p>
+                  ) : null}
                 </div>
               ))}
             </div>

@@ -10,8 +10,8 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Vercel's function logs already capture this server-side; logging
-    // here too covers errors that only ever reach the client.
+    // Azure App Service's log stream already captures this server-side;
+    // logging here too covers errors that only ever reach the client.
     console.error(error);
   }, [error]);
 
