@@ -25,13 +25,17 @@ az appservice plan create \
   --is-linux \
   --sku F1
 
-# Web app, Node 20 runtime
+# Web app, Node 22 runtime (Node 20 reached end-of-life in April 2026, so
+# App Service no longer offers it for new apps)
 az webapp create \
   --name kamu-app \
   --resource-group kamu-rg \
   --plan kamu-plan \
-  --runtime "NODE:20-lts"
+  --runtime "NODE:22-lts"
 ```
+
+The restaurant owner portal (`../kamu_restaurants`) runs as a second web app
+on this same `kamu-plan` -- see `kamu_restaurants/docs/azure-deployment.md`.
 
 ### App settings (environment variables)
 
