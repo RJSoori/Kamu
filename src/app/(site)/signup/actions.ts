@@ -3,16 +3,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ensureCustomerRow } from "@/lib/auth/customer";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export interface SignupState {
   error: string | null;
   confirmationSent: boolean;
-}
-
-function sanitizeNext(nextParam: string): string {
-  return nextParam.startsWith("/") && !nextParam.startsWith("//")
-    ? nextParam
-    : "/";
 }
 
 export async function signUp(
@@ -21,7 +16,7 @@ export async function signUp(
 ): Promise<SignupState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = sanitizeNext(String(formData.get("next") ?? "/"));
+  const next = safeRedirectPath(String(formData.get("next") ?? ""), "/");
 
   if (!email || !password) {
     return { error: "Email and password are required.", confirmationSent: false };

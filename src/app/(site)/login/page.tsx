@@ -1,3 +1,4 @@
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { LoginForm } from "./LoginForm";
 
 export default async function LoginPage({
@@ -6,7 +7,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const params = await searchParams;
-  const next = params.next && params.next.startsWith("/") ? params.next : "/";
+  const next = safeRedirectPath(params.next, "/");
 
   return (
     <div className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-slate-50 px-6 py-12">

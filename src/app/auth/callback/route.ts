@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ensureCustomerRow } from "@/lib/auth/customer";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 /**
  * PKCE OAuth callback for Supabase Auth (Google sign-in). Supabase redirects
@@ -14,9 +15,7 @@ import { ensureCustomerRow } from "@/lib/auth/customer";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const nextParam = searchParams.get("next") ?? "/";
-  const next =
-    nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/";
+  const next = safeRedirectPath(searchParams.get("next"), "/");
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login`);

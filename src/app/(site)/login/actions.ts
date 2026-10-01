@@ -3,17 +3,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ensureCustomerRow } from "@/lib/auth/customer";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export interface LoginState {
   error: string | null;
-}
-
-function sanitizeNext(nextParam: string): string {
-  // Only ever redirect within the app -- an unvalidated `next` value is an
-  // open-redirect vector.
-  return nextParam.startsWith("/") && !nextParam.startsWith("//")
-    ? nextParam
-    : "/";
 }
 
 export async function signIn(
@@ -22,7 +15,9 @@ export async function signIn(
 ): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = sanitizeNext(String(formData.get("next") ?? "/"));
+  // Only ever redirect within the app -- an unvalidated `next` value is an
+  // open-redirect vector.
+  const next = safeRedirectPath(String(formData.get("next") ?? ""), "/");
 
   if (!email || !password) {
     return { error: "Email and password are required." };
