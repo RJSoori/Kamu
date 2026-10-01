@@ -19,8 +19,8 @@ export function RegisterForm({ next }: { next: string }) {
           Check your email
         </h1>
         <p className="text-sm text-slate-600">
-          We sent a confirmation link. Click it to finish creating your
-          account, then log in.
+          We sent a confirmation link to your email. Open it to finish
+          creating your account.
         </p>
       </div>
     );
@@ -33,7 +33,9 @@ export function RegisterForm({ next }: { next: string }) {
           Register your restaurant
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Create an owner account to manage your listing on Kamu.
+          Create an owner account to manage your listing on Kamu. You can set
+          up your listing straight away; it goes live once the Kamu team has
+          verified your account (a one-time check).
         </p>
       </div>
 
@@ -48,6 +50,22 @@ export function RegisterForm({ next }: { next: string }) {
             autoComplete="name"
             className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal text-slate-900"
           />
+        </label>
+
+        <label className="block text-sm font-medium text-slate-700">
+          Phone number
+          <input
+            type="tel"
+            name="phone"
+            required
+            autoComplete="tel"
+            placeholder="077 123 4567"
+            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal text-slate-900"
+          />
+          <span className="mt-1 block text-xs font-normal text-slate-500">
+            Only used by the Kamu team to verify your restaurant. Never shown
+            to customers.
+          </span>
         </label>
 
         <label className="block text-sm font-medium text-slate-700">

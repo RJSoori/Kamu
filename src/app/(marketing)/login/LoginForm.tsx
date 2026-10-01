@@ -4,9 +4,28 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { signIn, type LoginState } from "./actions";
 
+export type LoginNotice = "confirmed" | "confirm_failed";
+
+const NOTICE_TEXT: Record<LoginNotice, { text: string; tone: "info" | "error" }> = {
+  confirmed: {
+    text: "Your email is confirmed. Log in to finish setting up your account.",
+    tone: "info",
+  },
+  confirm_failed: {
+    text: "That confirmation link is invalid or has expired. Register again with the same email to get a new one.",
+    tone: "error",
+  },
+};
+
 const initialState: LoginState = { error: null };
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({
+  next,
+  notice,
+}: {
+  next: string;
+  notice: LoginNotice | null;
+}) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
 
   return (
@@ -19,6 +38,18 @@ export function LoginForm({ next }: { next: string }) {
           Manage your listing on Kamu.
         </p>
       </div>
+
+      {notice ? (
+        <p
+          className={`rounded-xl px-3 py-2 text-sm ${
+            NOTICE_TEXT[notice].tone === "info"
+              ? "bg-emerald-50 text-emerald-800"
+              : "bg-rose-50 text-rose-700"
+          }`}
+        >
+          {NOTICE_TEXT[notice].text}
+        </p>
+      ) : null}
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="next" value={next} />

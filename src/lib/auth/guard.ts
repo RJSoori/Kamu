@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { canOwnerEdit, type OwnerStatus } from "@/lib/owner-status";
 
 export class UnauthorizedError extends Error {
   constructor(message = "Not authorized") {
@@ -8,13 +9,25 @@ export class UnauthorizedError extends Error {
   }
 }
 
+export interface OwnerAccount {
+  id: string;
+  email: string | null;
+  display_name: string | null;
+  phone: string | null;
+  status: OwnerStatus;
+  status_note: string | null;
+}
+
+const OWNER_COLUMNS = "id, email, display_name, phone, status, status_note";
+
 /**
  * Throws UnauthorizedError unless the current session belongs to a
- * registered restaurant owner. Call this from every protected server
- * boundary (currently just src/app/dashboard/layout.tsx) -- defense in
- * depth, not the primary enforcement boundary; the owner_id = auth.uid()
- * RLS policies (../kamu/supabase/migrations/20260911120000_restaurant_owners.sql)
- * are what actually stop a non-owner write even if this guard were skipped.
+ * registered restaurant owner, and returns that owner's account (including
+ * its verification status). Call this from every protected server boundary.
+ * Defense in depth, not the primary enforcement boundary: the RLS policies
+ * in ../kamu/supabase/migrations (owner_id = auth.uid() and
+ * is_active_owner()) are what actually stop a non-owner write even if this
+ * guard were skipped.
  *
  * Unlike kamu's requireAdmin() (which needs a SECURITY DEFINER is_admin()
  * RPC because admin_users has zero SELECT policies), restaurant_owners has
@@ -24,7 +37,8 @@ export class UnauthorizedError extends Error {
  * auth.users pool is shared with the customer-facing `kamu` app (same
  * Supabase project), so a plain customer account -- or an admin account --
  * can authenticate here too. Only a matching restaurant_owners row (created
- * by the register flow, see src/lib/auth/owner.ts) counts as "is an owner".
+ * by register, /auth/confirm, or the explicit upgrade on /login, see
+ * src/lib/auth/owner.ts) counts as "is an owner".
  */
 export async function requireOwner() {
   const supabase = await createClient();
@@ -36,15 +50,32 @@ export async function requireOwner() {
     throw new UnauthorizedError("Not signed in");
   }
 
-  const { data: ownerRow, error } = await supabase
+  const { data: owner, error } = await supabase
     .from("restaurant_owners")
-    .select("id")
+    .select(OWNER_COLUMNS)
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error || !ownerRow) {
+  if (error || !owner) {
     throw new UnauthorizedError("Not a registered restaurant owner");
   }
 
-  return { supabase, user };
+  return { supabase, user, owner: owner as OwnerAccount };
+}
+
+/**
+ * requireOwner() plus "this owner may currently make changes" (pending or
+ * approved -- rejected/suspended owners are read-only). Use in every server
+ * action that writes.
+ */
+export async function requireActiveOwner() {
+  const context = await requireOwner();
+
+  if (!canOwnerEdit(context.owner.status)) {
+    throw new UnauthorizedError(
+      "Your owner account can't make changes right now.",
+    );
+  }
+
+  return context;
 }
