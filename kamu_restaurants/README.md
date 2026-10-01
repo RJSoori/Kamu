@@ -64,7 +64,7 @@ npm run dev                  # http://localhost:3001
 
 `npm run dev` uses port 3001 so it can run alongside `../kamu` on 3000.
 
-Checks (also run by CI on every push and PR):
+Checks (also run by CI, [`../.github/workflows/owner-ci.yml`](../.github/workflows/owner-ci.yml)):
 
 ```bash
 npm run lint && npm run typecheck && npm test && npm run build

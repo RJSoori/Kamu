@@ -1,18 +1,29 @@
-name: CI
+name: Customer app CI (kamu)
 
 on:
   pull_request:
+    paths:
+      - "kamu/**"
+      - ".github/workflows/customer-ci.yml"
   push:
     branches: [main]
+    paths:
+      - "kamu/**"
+      - ".github/workflows/customer-ci.yml"
+
+defaults:
+  run:
+    working-directory: kamu
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      # Shape-only validation (src/lib/env.ts) -- no test hits a live
-      # Supabase project, so placeholder values are enough.
+      # Shape-only validation (src/lib/env.ts / env.server.ts) -- no test
+      # hits a live Supabase project, so placeholder values are enough.
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +31,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: kamu/package-lock.json
 
       - name: Install dependencies
         run: npm ci

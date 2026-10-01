@@ -1,0 +1,11 @@
+# Repo-wide safety net. Each app (kamu/, kamu_restaurants/) has its own
+# .gitignore with the full Next.js rules; this catches anything left at the
+# root -- e.g. a clone from before the single-repo move still has the
+# customer app's node_modules/, .next/ and .env.local sitting up here.
+node_modules/
+.next/
+.env*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store

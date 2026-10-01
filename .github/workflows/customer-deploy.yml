@@ -1,0 +1,36 @@
+name: Deploy customer app (kamu) to Azure App Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "kamu/**"
+      - "!kamu/docs/**"
+      - "!kamu/supabase/**"
+      - ".github/workflows/customer-deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    # Skipped (rather than failing) until the Azure web app exists and the
+    # repo variable is set -- see kamu/docs/azure-deployment.md.
+    if: vars.AZURE_WEBAPP_NAME != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip the customer app for deployment
+        # Zips kamu/ itself, so the app is at the root of the package, same
+        # as before the single-repo move. node_modules/.next are excluded --
+        # Azure's Oryx builder runs `npm install && npm run build` remotely
+        # (SCM_DO_BUILD_DURING_DEPLOYMENT), using the app's own App Settings
+        # as build-time env vars.
+        working-directory: kamu
+        run: zip -r ../release.zip . -x "node_modules/*" ".next/*"
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: release.zip

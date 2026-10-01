@@ -1,0 +1,34 @@
+name: Deploy owner portal (kamu_restaurants) to Azure App Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "kamu_restaurants/**"
+      - "!kamu_restaurants/docs/**"
+      - ".github/workflows/owner-deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    # Skipped (rather than failing) until the Azure web app exists and the
+    # repo variable is set -- see kamu_restaurants/docs/azure-deployment.md.
+    if: vars.AZURE_OWNER_WEBAPP_NAME != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip the owner portal for deployment
+        # Zips kamu_restaurants/ itself so the app is at the root of the
+        # package. node_modules/.next are excluded -- Azure's Oryx builder
+        # runs `npm install && npm run build` remotely
+        # (SCM_DO_BUILD_DURING_DEPLOYMENT) with the app's own App Settings.
+        working-directory: kamu_restaurants
+        run: zip -r ../release.zip . -x "node_modules/*" ".next/*"
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_OWNER_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_OWNER_WEBAPP_PUBLISH_PROFILE }}
+          package: release.zip

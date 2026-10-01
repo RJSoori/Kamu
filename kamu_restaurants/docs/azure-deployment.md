@@ -70,13 +70,16 @@ az webapp deployment list-publishing-profiles \
   --xml
 ```
 
-In **this app's** GitHub repo (Settings → Secrets and variables → Actions):
+In the Kamu GitHub repo (Settings → Secrets and variables → Actions). The
+names are prefixed `AZURE_OWNER_` because the customer app deploys from the
+same repo with its own `AZURE_WEBAPP_*` pair:
 
-- secret `AZURE_WEBAPP_PUBLISH_PROFILE`: the full XML output above
-- variable `AZURE_WEBAPP_NAME`: `kamu-restaurants-app`
+- secret `AZURE_OWNER_WEBAPP_PUBLISH_PROFILE`: the full XML output above
+- variable `AZURE_OWNER_WEBAPP_NAME`: `kamu-restaurants-app`
 
-[.github/workflows/azure-deploy.yml](../.github/workflows/azure-deploy.yml)
-reads both.
+[.github/workflows/owner-deploy.yml](../../.github/workflows/owner-deploy.yml)
+(at the repo root) reads both. Until the variable exists, the deploy job is
+skipped rather than failing.
 
 ## Supabase Auth redirect URLs
 
@@ -94,12 +97,16 @@ afterwards still finishes their owner registration (see
 
 ## How deploys happen
 
-Every push to `main` triggers the deploy workflow. It zips the source
-(excluding `node_modules`, `.git`, `.next`) and hands it to
-`azure/webapps-deploy`. Oryx then builds and restarts the app.
-`workflow_dispatch` is enabled for manual redeploys.
-[ci.yml](../.github/workflows/ci.yml) (lint/typecheck/test/build) runs on
-every PR and push as a separate correctness gate.
+This app lives in `kamu_restaurants/` of the single Kamu repo. Every push to
+`main` that changes something under `kamu_restaurants/` (other than `docs/`)
+triggers the deploy workflow. It zips the `kamu_restaurants/` folder
+(excluding `node_modules`, `.next`), so the app sits at the root of the
+package, and hands it to `azure/webapps-deploy`. Oryx then builds and
+restarts the app. Changes that only touch the customer app don't redeploy
+this one. `workflow_dispatch` is enabled for manual redeploys.
+[owner-ci.yml](../../.github/workflows/owner-ci.yml)
+(lint/typecheck/test/build) runs on every PR and `main` push that touches
+`kamu_restaurants/`, as a separate correctness gate.
 
 ## Rollback and logs
 

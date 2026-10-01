@@ -89,20 +89,28 @@ Copy the full XML output into a new GitHub repo secret named
 `AZURE_WEBAPP_PUBLISH_PROFILE` (Settings → Secrets and variables → Actions).
 Also add a repo **variable** (not secret) named `AZURE_WEBAPP_NAME` set to
 the app name (`kamu-app` above) — the deploy workflow
-([.github/workflows/azure-deploy.yml](../.github/workflows/azure-deploy.yml))
-reads both.
+([.github/workflows/customer-deploy.yml](../../.github/workflows/customer-deploy.yml),
+at the repo root) reads both. Until the variable exists, the deploy job is
+skipped rather than failing.
+
+The owner portal deploys from the same repo with its own secret/variable
+pair (`AZURE_OWNER_WEBAPP_PUBLISH_PROFILE` / `AZURE_OWNER_WEBAPP_NAME`).
 
 ## How deploys happen
 
-Every push to `main` triggers the deploy workflow: it zips the repo source
-(excluding `node_modules`, `.git`, `.next`) and hands it to
-`azure/webapps-deploy`, which uploads it to App Service. Oryx then builds and
-restarts the app using the startup command above. `workflow_dispatch` is also
-enabled for manual redeploys.
+The whole project is one repo: this app lives in `kamu/`, next to the owner
+portal in `kamu_restaurants/`. Every push to `main` that changes something
+under `kamu/` (other than `docs/` and `supabase/`) triggers the deploy
+workflow: it zips the `kamu/` folder (excluding `node_modules`, `.next`), so
+the app sits at the root of the package exactly as App Service expects, and
+hands it to `azure/webapps-deploy`. Oryx then builds and restarts the app
+using the startup command above. Changes that only touch the owner portal
+don't redeploy this app. `workflow_dispatch` is also enabled for manual
+redeploys.
 
-The existing [ci.yml](../.github/workflows/ci.yml) (lint/typecheck/test/build)
-still runs on every PR and push — it's a correctness gate, separate from the
-deploy workflow.
+[customer-ci.yml](../../.github/workflows/customer-ci.yml)
+(lint/typecheck/test/build) runs on every PR and `main` push that touches
+`kamu/` — it's a correctness gate, separate from the deploy workflow.
 
 ## Rollback
 
