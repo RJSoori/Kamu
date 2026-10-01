@@ -6,9 +6,17 @@ import { env } from "@/lib/env";
 
 /**
  * Supabase client for Server Components, Route Handlers, and Server
- * Actions. Mirrors kamu/src/lib/supabase/server.ts -- see that file's
- * comment for the cache()/cookie-write details, which apply identically
- * here.
+ * Actions. Mirrors kamu/src/lib/supabase/server.ts. Reads the request's
+ * auth cookies, so RLS policies that key off auth.uid() see the signed-in
+ * owner here.
+ *
+ * Wrapped in React's cache() so every Server Component in one request's
+ * render tree shares a single client instance.
+ *
+ * Writing cookies from a Server Component itself is a no-op by design (Next
+ * only allows cookie writes from Route Handlers/Server Actions/Proxy); the
+ * try/catch below is exactly for that expected case -- session refresh for
+ * those requests is handled by src/proxy.ts instead.
  */
 export const createClient = cache(async () => {
   const cookieStore = await cookies();

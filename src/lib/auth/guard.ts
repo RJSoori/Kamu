@@ -1,9 +1,15 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { canOwnerEdit, type OwnerStatus } from "@/lib/owner-status";
 
+export type UnauthorizedReason = "signed_out" | "not_owner" | "inactive_owner";
+
 export class UnauthorizedError extends Error {
-  constructor(message = "Not authorized") {
+  constructor(
+    readonly reason: UnauthorizedReason,
+    message = "Not authorized",
+  ) {
     super(message);
     this.name = "UnauthorizedError";
   }
@@ -39,15 +45,18 @@ const OWNER_COLUMNS = "id, email, display_name, phone, status, status_note";
  * can authenticate here too. Only a matching restaurant_owners row (created
  * by register, /auth/confirm, or the explicit upgrade on /login, see
  * src/lib/auth/owner.ts) counts as "is an owner".
+ *
+ * Wrapped in cache() so the dashboard layout and the page under it share
+ * one lookup per request.
  */
-export async function requireOwner() {
+export const requireOwner = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new UnauthorizedError("Not signed in");
+    throw new UnauthorizedError("signed_out", "Not signed in");
   }
 
   const { data: owner, error } = await supabase
@@ -57,11 +66,14 @@ export async function requireOwner() {
     .maybeSingle();
 
   if (error || !owner) {
-    throw new UnauthorizedError("Not a registered restaurant owner");
+    throw new UnauthorizedError(
+      "not_owner",
+      "Not a registered restaurant owner",
+    );
   }
 
   return { supabase, user, owner: owner as OwnerAccount };
-}
+});
 
 /**
  * requireOwner() plus "this owner may currently make changes" (pending or
@@ -73,6 +85,7 @@ export async function requireActiveOwner() {
 
   if (!canOwnerEdit(context.owner.status)) {
     throw new UnauthorizedError(
+      "inactive_owner",
       "Your owner account can't make changes right now.",
     );
   }
