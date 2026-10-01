@@ -6,6 +6,7 @@ import {
   type Restaurant,
 } from "@/lib/data/restaurants";
 import { RestaurantFilters } from "@/components/site/RestaurantFilters";
+import { MoodSearchButton } from "@/components/site/MoodSearchButton";
 
 export default async function Home({
   searchParams,
@@ -46,6 +47,19 @@ export default async function Home({
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-col items-start gap-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Not sure where to start?
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Describe a vibe or craving and we&apos;ll match it to a
+              restaurant.
+            </p>
+          </div>
+          <MoodSearchButton />
         </div>
 
         <RestaurantFilters

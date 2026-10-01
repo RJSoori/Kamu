@@ -15,12 +15,6 @@ export async function SiteHeader() {
           <Link href="/" className="text-lg font-semibold text-slate-900">
             Kamu
           </Link>
-          <Link
-            href="/search"
-            className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
-          >
-            Mood search
-          </Link>
         </div>
 
         {user ? (
