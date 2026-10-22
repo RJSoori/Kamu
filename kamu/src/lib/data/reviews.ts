@@ -50,11 +50,10 @@ export function summarizeReviews(reviews: Review[]): ReviewSummary {
 }
 
 /**
- * The signed-in customer's own review for this restaurant, if any. The
- * reviews table has no DB-level uniqueness on (customer_id, restaurant_id)
- * -- this is an app-level "one review per person per place" rule, enforced
- * by upsertMyReview always updating this row instead of inserting a new one
- * when it exists.
+ * The signed-in customer's own review for this restaurant, if any. At most
+ * one exists: reviews_one_per_customer_idx (migration 20261022120000) makes
+ * "one review per person per place" a database rule, and upsertMyReview
+ * updates this row instead of inserting when it exists.
  */
 export async function getMyReviewForRestaurant(
   restaurantId: string,
@@ -118,7 +117,12 @@ export async function upsertMyReview(
   });
 
   if (error) {
-    throw new Error(error.message);
+    // 23505 = reviews_one_per_customer_idx: e.g. a double submit from two tabs.
+    throw new Error(
+      error.code === "23505"
+        ? "You've already reviewed this place. Refresh to edit your review."
+        : error.message,
+    );
   }
 }
 

@@ -34,9 +34,6 @@ export default async function Home({
       <div className="mx-auto w-full max-w-6xl space-y-8">
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="space-y-4">
-            <div className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
-              Phase 2 · Browse restaurants
-            </div>
             <div>
               <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
                 Find restaurants by vibe, area, or cuisine.

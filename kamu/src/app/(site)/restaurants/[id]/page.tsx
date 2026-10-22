@@ -15,6 +15,7 @@ import { StarRating } from "@/components/site/StarRating";
 import { ReviewForm } from "@/components/site/ReviewForm";
 import { ReviewDeleteButton } from "@/components/site/ReviewDeleteButton";
 import { RestaurantMap } from "@/components/site/RestaurantMap";
+import { ReportButton } from "@/components/site/ReportButton";
 
 const DAY_LABELS: Record<string, string> = {
   mon: "Monday",
@@ -94,7 +95,10 @@ export default async function RestaurantDetailPage({
                   {restaurant.price_range || "-"}
                 </div>
                 {user ? (
-                  <SaveButton restaurantId={restaurant.id} initiallySaved={saved} />
+                  <>
+                    <SaveButton restaurantId={restaurant.id} initiallySaved={saved} />
+                    <ReportButton restaurantId={restaurant.id} />
+                  </>
                 ) : (
                   <Link
                     href={`/login?next=/restaurants/${restaurant.id}`}
@@ -178,6 +182,14 @@ export default async function RestaurantDetailPage({
                             <p className="mt-1 text-sm text-slate-600">
                               {item.description}
                             </p>
+                          ) : null}
+                          {user ? (
+                            <div className="mt-1">
+                              <ReportButton
+                                restaurantId={restaurant.id}
+                                menuItemId={item.id}
+                              />
+                            </div>
                           ) : null}
                         </div>
                         {item.price !== null ? (

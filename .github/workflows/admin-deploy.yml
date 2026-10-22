@@ -1,0 +1,34 @@
+name: Deploy admin portal (kamu_admin) to Azure App Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "kamu_admin/**"
+      - "!kamu_admin/docs/**"
+      - ".github/workflows/admin-deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    # Skipped (rather than failing) until the Azure web app exists and the
+    # repo variable is set -- see kamu_admin/README.md.
+    if: vars.AZURE_ADMIN_WEBAPP_NAME != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip the admin portal for deployment
+        # Zips kamu_admin/ itself so the app is at the root of the
+        # package. node_modules/.next are excluded -- Azure's Oryx builder
+        # runs `npm install && npm run build` remotely
+        # (SCM_DO_BUILD_DURING_DEPLOYMENT) with the app's own App Settings.
+        working-directory: kamu_admin
+        run: zip -r ../release.zip . -x "node_modules/*" ".next/*"
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_ADMIN_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_ADMIN_WEBAPP_PUBLISH_PROFILE }}
+          package: release.zip

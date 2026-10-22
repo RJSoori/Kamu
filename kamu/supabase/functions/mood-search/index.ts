@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { embedText } from "../_shared/embeddings.ts";
 
 const MATCH_COUNT = 8;
+const MAX_QUERY_LENGTH = 300;
 
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
@@ -18,6 +19,11 @@ Deno.serve(async (req: Request) => {
     if (!query) throw new Error();
   } catch {
     return json({ error: "Body must be { query: string }" }, 400);
+  }
+  // Public endpoint: a mood is one sentence, and embedding huge text burns
+  // the free tier's Edge Function time.
+  if (query.length > MAX_QUERY_LENGTH) {
+    return json({ error: `Keep it under ${MAX_QUERY_LENGTH} characters` }, 400);
   }
 
   // Forward whatever the caller sent (a logged-in customer's session, or the

@@ -1,8 +1,8 @@
 # Customer Auth
 
-Email/password and Google sign-in for customers, separate from the admin
-login (`/admin/login`) which only ever provisions `admin_users`, not
-`customers`.
+Email/password and Google sign-in for customers. Admins sign in through
+the separate admin app (`../kamu_admin`), which never creates `customers`
+rows.
 
 ## What's wired up
 
@@ -13,8 +13,7 @@ login (`/admin/login`) which only ever provisions `admin_users`, not
   `customers` row on first login/signup/OAuth callback (idempotent, safe to
   call every time)
 - [SiteHeader](../src/components/SiteHeader.tsx) — shows Log in/Sign up or
-  the signed-in email + Log out, scoped to the `(site)` route group so it
-  doesn't appear on `/admin/*`
+  the signed-in email + Log out, scoped to the `(site)` route group
 
 ## Manual setup still required
 

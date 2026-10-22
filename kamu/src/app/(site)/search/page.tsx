@@ -43,6 +43,8 @@ export default async function MoodSearchPage({
           <input
             type="text"
             name="q"
+            // Same cap as the mood-search Edge Function.
+            maxLength={300}
             defaultValue={query}
             placeholder="e.g. cheap fast food"
             required

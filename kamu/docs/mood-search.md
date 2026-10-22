@@ -49,26 +49,24 @@ npx supabase functions deploy embed-restaurant
 npx supabase functions deploy mood-search
 ```
 
-## Backfill: embedding your existing restaurants
+## Keeping embeddings up to date
 
-Nothing is searchable until each restaurant's `vibe_embedding` is populated
-— it's `null` for every row right now. `embed-restaurant` doesn't gate on
-admin status itself (see the comment in its `index.ts`); it just forwards
-whatever `Authorization` header it's given and lets RLS decide, so with
-admin bootstrap still parked, use the service-role key directly for now:
+Saving a restaurant re-embeds it automatically: the admin panel
+(`../kamu_admin`) and the owner portal (`../kamu_restaurants`) both call
+`embed-restaurant` after every save that has a vibe description. The function
+authorizes the caller itself (`can_edit_restaurant()`: an admin, or the
+restaurant's active owner), so no service-role key is needed in any app.
+
+For a one-off backfill (for example after restoring data), call it with the
+service-role key from Supabase Dashboard -> Project Settings -> API Keys:
 
 ```bash
 curl -X POST \
   "https://iznmqgpcpslnmsjmxbpo.supabase.co/functions/v1/embed-restaurant" \
-  -H "Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY from .env.local>" \
+  -H "Authorization: Bearer <service-role key from the dashboard>" \
   -H "Content-Type: application/json" \
   -d '{"restaurant_id": "<id from the restaurants table>"}'
 ```
-
-Repeat per restaurant. Once admin is unparked, the natural follow-up is
-wiring this into the admin save flow (call `embed-restaurant` after
-create/update instead of doing it by hand) — not done yet, out of scope for
-this pass.
 
 ## Testing it
 

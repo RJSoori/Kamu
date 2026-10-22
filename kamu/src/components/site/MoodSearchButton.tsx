@@ -99,6 +99,8 @@ export function MoodSearchButton() {
                 ref={inputRef}
                 type="text"
                 name="q"
+                // Same cap as the mood-search Edge Function.
+                maxLength={300}
                 placeholder="e.g. quiet place to read"
                 required
                 className="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-900"

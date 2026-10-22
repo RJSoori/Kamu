@@ -1,14 +1,14 @@
 # Owner verification & customer reports: admin portal contract
 
-This describes the database side of restaurant-owner moderation, for whoever
-builds the admin portal. Everything here already exists in the DB
+This describes the database side of restaurant-owner moderation. The admin
+portal that uses it is [`kamu_admin`](../../kamu_admin). Everything here already exists in the DB
 ([migration](../supabase/migrations/20261001120000_owner_verification_and_reports.sql),
 [tests](../supabase/tests/database/owner_verification.test.sql)). The admin
 portal only needs to read and update these tables as a signed-in admin. No
 service-role key and no extra endpoints are needed.
 
 "Admin" means the signed-in user has a row in `admin_users` (checked by
-`is_admin()`), same as the existing `/admin` panel.
+`is_admin()`).
 
 ## The model
 
@@ -174,10 +174,6 @@ owner as a separate step if needed.
 
 ## What's not built yet
 
-- **The customer-side "Report" button** (in `kamu`). Insert into
-  `content_reports` as the signed-in customer:
-  `{ restaurant_id, menu_item_id?, reason, details? }`. `reporter_id` and
-  `status` default correctly.
 - **Owner notifications** (emails on approval, rejection or takedown). For
   now the owner sees `status_note` and `moderation_note` the next time they
   open their dashboard.

@@ -9,12 +9,8 @@ import { env } from "@/lib/env";
  * Server Components downstream always see an up-to-date session.
  *
  * This performs only the session refresh + a cheap "is there a user"
- * lookup. It is NOT the authoritative admin-role check -- that lives in
- * src/app/admin/(protected)/layout.tsx, which queries admin_users with the
- * request's real session. Keeping the role check out of proxy avoids an
- * extra DB round trip on every single request across the whole site, and
- * matches Next's own guidance that Proxy is for optimistic checks, not a
- * full authorization solution.
+ * lookup. Proxy is for optimistic checks, not authorization: RLS and the
+ * per-page checks are what actually protect data.
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });

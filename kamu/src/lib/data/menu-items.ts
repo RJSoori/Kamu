@@ -12,8 +12,6 @@ export interface MenuItem {
   created_at: string;
 }
 
-export type MenuItemInput = Omit<MenuItem, "id" | "created_at">;
-
 const MENU_ITEM_COLUMNS =
   "id, restaurant_id, item_name, description, price, photo_url, category, created_at";
 
@@ -37,52 +35,4 @@ export async function getMenuItemsByRestaurant(
   }
 
   return (data ?? []) as MenuItem[];
-}
-
-/** Admin-only in practice: RLS rejects this for non-admin callers. */
-export async function createMenuItem(
-  input: MenuItemInput,
-): Promise<MenuItem> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("menu_items")
-    .insert(input)
-    .select(MENU_ITEM_COLUMNS)
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data as MenuItem;
-}
-
-/** Admin-only in practice: RLS rejects this for non-admin callers. */
-export async function updateMenuItem(
-  id: string,
-  input: Partial<MenuItemInput>,
-): Promise<MenuItem> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("menu_items")
-    .update(input)
-    .eq("id", id)
-    .select(MENU_ITEM_COLUMNS)
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data as MenuItem;
-}
-
-/** Admin-only in practice: RLS rejects this for non-admin callers. */
-export async function deleteMenuItem(id: string): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase.from("menu_items").delete().eq("id", id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
 }

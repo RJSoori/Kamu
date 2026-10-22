@@ -2,9 +2,8 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 
 /**
  * Wraps every customer-facing page (home, restaurant detail, login, signup)
- * with the shared header. Deliberately scoped to this route group rather
- * than the root layout -- /admin has its own AdminNav and would otherwise
- * end up with both, plus customer login/logout links inside the admin panel.
+ * with the shared header. Scoped to this route group rather than the root
+ * layout so non-page routes like /auth/callback stay header-free.
  */
 export default function SiteLayout({
   children,

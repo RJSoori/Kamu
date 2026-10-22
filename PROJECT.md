@@ -48,7 +48,7 @@ Existing apps (Google Maps, TripAdvisor) use static filters — cuisine, price, 
 - Verify restaurant owner accounts (one-time approval after they register)
 - Review customer reports about owner-posted content, and hide content or suspend owners where needed
 
-The admin portal is built by a teammate. The owner portal side only provides the database contract for it; see `kamu/docs/owner-verification-and-reports.md`.
+The admin portal is its own app, `kamu_admin` (sibling to `kamu` and `kamu_restaurants`). Its database contract is `kamu/docs/owner-verification-and-reports.md`.
 
 ### Restaurant-owner-facing (`kamu_restaurants`)
 - Owners register, then wait for a **one-time admin verification** of their account

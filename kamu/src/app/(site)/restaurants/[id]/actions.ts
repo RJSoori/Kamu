@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { upsertMyReview, deleteMyReview } from "@/lib/data/reviews";
+import { REPORT_REASONS } from "@/lib/report-reasons";
+import { createClient } from "@/lib/supabase/server";
 
 export interface ReviewFormState {
   error: string | null;
@@ -60,4 +62,52 @@ export async function removeReview(
 
   revalidatePath(`/restaurants/${restaurantId}`);
   return { error: null };
+}
+
+
+export interface ReportFormState {
+  error: string | null;
+  sent: boolean;
+}
+
+/**
+ * Bound to (restaurantId, menuItemId) -- menuItemId null means the report is
+ * about the listing itself. RLS sets reporter_id and forces status "open".
+ */
+export async function submitReport(
+  restaurantId: string,
+  menuItemId: string | null,
+  _prevState: ReportFormState,
+  formData: FormData,
+): Promise<ReportFormState> {
+  const reason = String(formData.get("reason") ?? "");
+  const details = String(formData.get("details") ?? "").trim() || null;
+
+  if (!REPORT_REASONS.some(([value]) => value === reason)) {
+    return { error: "Pick a reason.", sent: false };
+  }
+  if (details && details.length > 2000) {
+    return { error: "Keep details under 2000 characters.", sent: false };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("content_reports").insert({
+    restaurant_id: restaurantId,
+    menu_item_id: menuItemId,
+    reason,
+    details,
+  });
+
+  if (error) {
+    // 23505 = unique index: this person already has an open report on it.
+    return {
+      error:
+        error.code === "23505"
+          ? "You've already reported this. We'll look at it soon."
+          : error.message,
+      sent: false,
+    };
+  }
+
+  return { error: null, sent: true };
 }

@@ -19,11 +19,10 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      # Shape-only validation (src/lib/env.ts / env.server.ts) -- no test
+      # Shape-only validation (src/lib/env.ts) -- no test
       # hits a live Supabase project, so placeholder values are enough.
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
-      SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
     steps:
       - uses: actions/checkout@v4
 

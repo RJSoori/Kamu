@@ -1,22 +1,10 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
+// Keeps the Supabase session cookie fresh. The admin portal (and its login
+// gate) is a separate app now: ../kamu_admin.
 export async function proxy(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request);
-
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-  const isAdminLoginRoute = request.nextUrl.pathname.startsWith("/admin/login");
-
-  // Cheap presence-only gate: no session at all -> bounce to login. This is
-  // NOT the authoritative admin-role check (see
-  // src/app/admin/(protected)/layout.tsx and updateSession()'s doc comment
-  // for why that split is deliberate).
-  if (isAdminRoute && !isAdminLoginRoute && !user) {
-    const redirectUrl = new URL("/admin/login", request.url);
-    redirectUrl.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(redirectUrl);
-  }
-
+  const { supabaseResponse } = await updateSession(request);
   return supabaseResponse;
 }
 
