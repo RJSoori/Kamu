@@ -11,11 +11,12 @@ export default async function MoodSearchPage({
   const query = q?.trim() ?? "";
 
   let results: MoodSearchResult[] = [];
+  let answer: string | null = null;
   let errorMessage: string | null = null;
 
   if (query) {
     try {
-      results = await searchByMood(query);
+      ({ results, answer } = await searchByMood(query));
     } catch (error) {
       errorMessage =
         error instanceof Error ? error.message : "Search failed.";
@@ -70,6 +71,17 @@ export default async function MoodSearchPage({
           </p>
         ) : (
           <div className="grid gap-4">
+            {/* Rendered as plain text (React escapes it), never as HTML. */}
+            {answer ? (
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500">
+                  AI summary · based on the matches below
+                </p>
+                <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-700">
+                  {answer}
+                </p>
+              </div>
+            ) : null}
             {results.map((restaurant) => (
               <Link
                 key={restaurant.id}
@@ -87,6 +99,12 @@ export default async function MoodSearchPage({
                     {restaurant.vibe_description ? (
                       <p className="mt-2 max-w-xl text-sm text-slate-600">
                         {restaurant.vibe_description}
+                      </p>
+                    ) : null}
+                    {restaurant.evidence?.[0] ? (
+                      <p className="mt-2 max-w-xl text-xs text-slate-500">
+                        <span className="font-medium">Closest menu/review match:</span>{" "}
+                        {restaurant.evidence[0]}
                       </p>
                     ) : null}
                   </div>
