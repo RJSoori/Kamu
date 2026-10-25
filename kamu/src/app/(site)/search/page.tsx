@@ -101,7 +101,7 @@ export default async function MoodSearchPage({
                         {restaurant.vibe_description}
                       </p>
                     ) : null}
-                    {restaurant.evidence?.[0] ? (
+                    {restaurant.matched_on_evidence && restaurant.evidence?.[0] ? (
                       <p className="mt-2 max-w-xl text-xs text-slate-500">
                         <span className="font-medium">Closest menu/review match:</span>{" "}
                         {restaurant.evidence[0]}

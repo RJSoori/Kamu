@@ -101,8 +101,10 @@ Search also matches menu items and reviews, so `vegan rice and curry` or
   per run. New menu items and reviews become searchable within a minute or so.
 - **Ranking**: `match_restaurants` scores each restaurant by its best match
   across its vibe description and its chunks, and returns its two closest
-  chunks as `evidence`. Gemini gets that evidence in its prompt, and `/search`
-  shows the closest one under each result.
+  chunks as `evidence`. Gemini gets that evidence in its prompt; `/search`
+  shows the closest one under a result only when `matched_on_evidence` is
+  true, i.e. a chunk (not the vibe) is what ranked it
+  (`20261026120000_match_on_evidence.sql`).
 - **Visibility**: a chunk is readable only when its menu item or review is
   (same RLS), so hidden items, drafts and unapproved owners' listings never
   show up. Only the triggers and the service role write chunks.

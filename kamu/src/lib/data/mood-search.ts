@@ -12,6 +12,8 @@ export interface MoodSearchResult {
   similarity: number;
   /** Closest menu-item/review chunks (up to 2), best first. */
   evidence: string[];
+  /** True when a menu item/review (not the vibe) is what ranked it. */
+  matched_on_evidence: boolean;
 }
 
 /**
