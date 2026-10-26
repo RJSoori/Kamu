@@ -65,8 +65,16 @@ recommendation, shown on `/search` as an "AI summary" card above the results.
 3. **Generate**: Gemini writes the answer; the function returns
    `{ results, answer }`.
 
-The answer is optional. With no key, a timeout (15s), or the free-tier rate
+The answer is optional. With no key, a timeout (40s), or the free-tier rate
 limit hit, `answer` is `null` and the page shows the plain list as before.
+
+`/search` doesn't wait for it: it first calls `mood-search` with
+`generate: false` and renders the list (~2s), then an async `AiSummary`
+component inside `<Suspense>` calls it again with generation on and streams
+the answer in when Gemini replies (often 15-25s on the free tier), replacing
+an "AI is reading the matches below…" placeholder. The second call re-runs
+retrieval server-side instead of taking the list from the browser, so nobody
+can hand Gemini a made-up restaurant list.
 Only the query and public restaurant fields are sent to Google, never who the
 user is: on the free tier Google may use prompts to improve its products.
 
@@ -129,6 +137,40 @@ from search_chunks;
 `waiting` should reach 0 a few minutes after setup. If it doesn't, check the
 job runs in `cron.job_run_details` and the HTTP responses in
 `net._http_response`.
+
+## Demo data
+
+`supabase/demo_data.sql` adds 58 fictional restaurants across Sri Lanka
+(invented names), with 252 menu items and 169 reviews, written unevenly on
+purpose: some vibes are long, some are one lowercase line, some are missing;
+some menu items have no description or category; some reviews are
+rating-only. Two listings test visibility: an unpublished draft
+("Mama's Kitchen") and an admin-hidden duplicate. Reviews have no customer
+(`customer_id` null), so no fake user accounts exist.
+
+All demo restaurant ids start with `d3000000-`; `supabase/demo_data_remove.sql`
+deletes them, and their menus, reviews and chunks go with them.
+
+```bash
+npx supabase db query --linked -f supabase/demo_data.sql         # add
+npx supabase db query --linked -f supabase/demo_data_remove.sql  # remove
+```
+
+After adding, menu/review chunks are embedded by the cron job (10 a minute),
+and vibe descriptions need `embed-restaurant` once per restaurant, for example
+from the SQL Editor using the Vault secrets:
+
+```sql
+select net.http_post(
+  url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url')
+    || '/functions/v1/embed-restaurant',
+  headers := jsonb_build_object('Content-Type', 'application/json',
+    'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key')),
+  body := jsonb_build_object('restaurant_id', id))
+from restaurants
+where vibe_embedding is null and nullif(trim(vibe_description), '') is not null
+limit 10;  -- repeat until it returns no rows; bigger batches hit compute limits
+```
 
 ## Keeping embeddings up to date
 

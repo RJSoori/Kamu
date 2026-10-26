@@ -15,9 +15,13 @@ Deno.serve(async (req: Request) => {
   }
 
   let query: string;
+  let generate: boolean;
   try {
     const body = await req.json();
     query = String(body.query ?? "").trim();
+    // /search asks for the list first (generate: false) so it can render
+    // straight away, then again for the answer, which streams in later.
+    generate = body.generate !== false;
     if (!query) throw new Error();
   } catch {
     return json({ error: "Body must be { query: string }" }, 400);
@@ -59,7 +63,7 @@ Deno.serve(async (req: Request) => {
   // Optional extra -- any failure (no key, timeout, free-tier 429) just
   // means no answer; the ranked list is still returned.
   let answer: string | null = null;
-  if (results.length > 0 && hasGeminiKey()) {
+  if (generate && results.length > 0 && hasGeminiKey()) {
     try {
       answer = await generateText(SYSTEM_PROMPT, buildPrompt(query, results));
     } catch (err) {

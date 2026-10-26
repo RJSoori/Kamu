@@ -11,6 +11,7 @@
 // SUPABASE_SERVICE_ROLE_KEY failed here -- the runtime's copy of the key isn't
 // byte-identical to the dashboard's, though both are valid service_role JWTs.)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { jwtRole } from "../_shared/auth.ts";
 import { embedText } from "../_shared/embeddings.ts";
 
 // Small batches: 50 hit the free tier's compute limit (WORKER_RESOURCE_LIMIT)
@@ -68,16 +69,6 @@ Deno.serve(async (req: Request) => {
 
   return json({ embedded });
 });
-
-function jwtRole(authHeader: string): string | null {
-  try {
-    const payload = authHeader.replace(/^Bearer /, "").split(".")[1];
-    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-    return JSON.parse(decoded).role ?? null;
-  } catch {
-    return null;
-  }
-}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

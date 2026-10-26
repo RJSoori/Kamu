@@ -12,9 +12,13 @@
 // pins it, so an owner can't hand-pick a vector that ranks their restaurant
 // first for every mood search. So this function does the authorization
 // itself -- can_edit_restaurant() evaluated as the caller (admin, or the
-// restaurant's active owner), or an exact service-role key match for
-// backfills -- and then reads/writes with a service-role client.
+// restaurant's active owner) -- and then reads/writes with a service-role
+// client. A service_role caller (backfills) skips that check and its own
+// token is used for the queries, so the database verifies it. (An exact
+// match against SUPABASE_SERVICE_ROLE_KEY used to be the check here; the
+// runtime's copy of that key isn't byte-identical to the dashboard's.)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { jwtRole } from "../_shared/auth.ts";
 import { embedText } from "../_shared/embeddings.ts";
 
 Deno.serve(async (req: Request) => {
@@ -41,7 +45,7 @@ Deno.serve(async (req: Request) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-  const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
+  const isServiceRole = jwtRole(authHeader) === "service_role";
   if (!isServiceRole) {
     const caller = createClient(
       supabaseUrl,
@@ -61,9 +65,14 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false },
-  });
+  const admin = createClient(
+    supabaseUrl,
+    isServiceRole ? Deno.env.get("SUPABASE_ANON_KEY")! : serviceRoleKey,
+    {
+      auth: { persistSession: false },
+      global: isServiceRole ? { headers: { Authorization: authHeader } } : {},
+    },
+  );
 
   const { data: restaurant, error: fetchError } = await admin
     .from("restaurants")

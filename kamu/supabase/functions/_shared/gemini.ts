@@ -4,7 +4,9 @@
 // Env-configurable because the free-tier model lineup keeps changing. The
 // lite model answers in seconds; full flash timed out on the free tier.
 const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-flash-lite-latest";
-const TIMEOUT_MS = 15000;
+// The free tier has taken 18-28s per answer; /search streams the answer in,
+// so a long wait no longer blocks the results.
+const TIMEOUT_MS = 40000;
 
 export function hasGeminiKey(): boolean {
   return Boolean(Deno.env.get("GEMINI_API_KEY"));

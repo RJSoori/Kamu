@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { searchByMood, type MoodSearchResult } from "@/lib/data/mood-search";
 
 export default async function MoodSearchPage({
@@ -11,12 +12,13 @@ export default async function MoodSearchPage({
   const query = q?.trim() ?? "";
 
   let results: MoodSearchResult[] = [];
-  let answer: string | null = null;
   let errorMessage: string | null = null;
 
   if (query) {
     try {
-      ({ results, answer } = await searchByMood(query));
+      // List only: the AI summary streams in separately (AiSummary below),
+      // because Gemini's free tier can take 20s+.
+      ({ results } = await searchByMood(query, { generate: false }));
     } catch (error) {
       errorMessage =
         error instanceof Error ? error.message : "Search failed.";
@@ -71,16 +73,18 @@ export default async function MoodSearchPage({
           </p>
         ) : (
           <div className="grid gap-4">
-            {/* Rendered as plain text (React escapes it), never as HTML. */}
-            {answer ? (
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500">
-                  AI summary · based on the matches below
-                </p>
-                <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-700">
-                  {answer}
-                </p>
-              </div>
+            {query ? (
+              <Suspense
+                fallback={
+                  <AiSummaryCard>
+                    <span className="animate-pulse text-slate-500">
+                      AI is reading the matches below…
+                    </span>
+                  </AiSummaryCard>
+                }
+              >
+                <AiSummary query={query} />
+              </Suspense>
             ) : null}
             {results.map((restaurant) => (
               <Link
@@ -124,5 +128,38 @@ export default async function MoodSearchPage({
         )}
       </div>
     </main>
+  );
+}
+
+// Runs the search again with generation on (cheap: one embedding + one query)
+// rather than taking the results from the browser, so nobody can feed Gemini
+// a made-up restaurant list. Renders nothing if there's no answer.
+async function AiSummary({ query }: { query: string }) {
+  let answer: string | null = null;
+  try {
+    ({ answer } = await searchByMood(query));
+  } catch {
+    // The list above already rendered; the summary is optional.
+  }
+  if (!answer) return null;
+
+  return (
+    <AiSummaryCard>
+      {/* Plain text (React escapes it), never HTML. */}
+      <span className="whitespace-pre-line text-slate-700">{answer}</span>
+    </AiSummaryCard>
+  );
+}
+
+function AiSummaryCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500">
+        AI summary · based on the matches below
+      </p>
+      <p aria-live="polite" className="mt-3 text-sm leading-6">
+        {children}
+      </p>
+    </div>
   );
 }
