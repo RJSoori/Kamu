@@ -15,6 +15,10 @@ import { StarRating } from "@/components/site/StarRating";
 import { ReviewForm } from "@/components/site/ReviewForm";
 import { ReviewDeleteButton } from "@/components/site/ReviewDeleteButton";
 import { RestaurantMap } from "@/components/site/RestaurantMap";
+import {
+  PhotoPlaceholder,
+  PRICE_LABELS,
+} from "@/components/site/RestaurantCard";
 import { ReportButton } from "@/components/site/ReportButton";
 
 const DAY_LABELS: Record<string, string> = {
@@ -51,37 +55,44 @@ export default async function RestaurantDetailPage({
     user ? getMyReviewForRestaurant(id) : Promise.resolve(null),
   ]);
   const menuByCategory = groupByCategory(menuItems);
-  const openingHours = Object.entries(restaurant.opening_hours ?? {});
+  const dayOrder = Object.keys(DAY_LABELS);
+  const openingHours = Object.entries(restaurant.opening_hours ?? {}).sort(
+    ([a], [b]) => dayOrder.indexOf(a) - dayOrder.indexOf(b),
+  );
   const reviewSummary = summarizeReviews(reviews);
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
+    <main className="px-6 pb-16 pt-8 text-slate-900">
       <div className="mx-auto w-full max-w-4xl space-y-8">
         <Link
           href="/"
-          className="text-sm font-medium text-slate-600 hover:text-slate-900"
+          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
         >
           ← All restaurants
         </Link>
 
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white/85 shadow-lg shadow-slate-900/5">
           {restaurant.cover_photo_url ? (
             <Image
               src={restaurant.cover_photo_url}
               alt={`${restaurant.name} cover`}
               width={1024}
               height={320}
-              className="h-64 w-full object-cover"
+              className="h-72 w-full object-cover"
             />
-          ) : null}
+          ) : (
+            <div className="h-48">
+              <PhotoPlaceholder id={restaurant.id} name={restaurant.name} />
+            </div>
+          )}
 
           <div className="space-y-6 p-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cinnamon-600">
                   {restaurant.area || "Unknown area"}
                 </p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+                <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">
                   {restaurant.name}
                 </h1>
                 {restaurant.address ? (
@@ -91,9 +102,17 @@ export default async function RestaurantDetailPage({
                 ) : null}
               </div>
               <div className="flex flex-col items-end gap-3">
-                <div className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
-                  {restaurant.price_range || "-"}
-                </div>
+                {restaurant.price_range ? (
+                  <div className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+                    {restaurant.price_range}
+                    {PRICE_LABELS[restaurant.price_range] ? (
+                      <span className="font-normal text-slate-500">
+                        {" "}
+                        · {PRICE_LABELS[restaurant.price_range]}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
                 {user ? (
                   <>
                     <SaveButton restaurantId={restaurant.id} initiallySaved={saved} />
@@ -115,7 +134,7 @@ export default async function RestaurantDetailPage({
                 {restaurant.cuisine_type.map((cuisine) => (
                   <span
                     key={cuisine}
-                    className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800"
+                    className="rounded-full bg-mango-100 px-3 py-1 text-xs font-semibold text-slate-700"
                   >
                     {cuisine}
                   </span>
@@ -124,7 +143,7 @@ export default async function RestaurantDetailPage({
             ) : null}
 
             {restaurant.vibe_description ? (
-              <p className="text-base leading-7 text-slate-700">
+              <p className="border-l-4 border-mango-400 pl-4 font-serif text-lg leading-8 text-slate-700">
                 {restaurant.vibe_description}
               </p>
             ) : null}
@@ -139,8 +158,8 @@ export default async function RestaurantDetailPage({
 
             {openingHours.length > 0 ? (
               <div>
-                <h2 className="text-lg font-semibold">Hours</h2>
-                <dl className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm text-slate-600 sm:grid-cols-3">
+                <h2 className="text-xl font-semibold">Opening hours</h2>
+                <dl className="mt-3 grid gap-x-8 gap-y-1.5 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 sm:grid-cols-2">
                   {openingHours.map(([day, hours]) => (
                     <div key={day} className="flex justify-between gap-2">
                       <dt className="font-medium text-slate-700">
@@ -155,8 +174,8 @@ export default async function RestaurantDetailPage({
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <h2 className="text-2xl font-semibold">Menu</h2>
+        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-8 shadow-sm shadow-slate-900/5">
+          <h2 className="text-3xl font-semibold">Menu</h2>
           {menuByCategory.size === 0 ? (
             <p className="mt-4 text-sm text-slate-600">
               No menu items added yet.
@@ -165,7 +184,7 @@ export default async function RestaurantDetailPage({
             <div className="mt-6 space-y-8">
               {[...menuByCategory.entries()].map(([category, items]) => (
                 <div key={category}>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-cinnamon-600">
                     {category}
                   </h3>
                   <div className="mt-3 divide-y divide-slate-100">
@@ -193,7 +212,7 @@ export default async function RestaurantDetailPage({
                           ) : null}
                         </div>
                         {item.price !== null ? (
-                          <p className="whitespace-nowrap font-semibold text-slate-900">
+                          <p className="whitespace-nowrap rounded-full bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-900">
                             LKR {item.price.toLocaleString()}
                           </p>
                         ) : null}
@@ -206,9 +225,9 @@ export default async function RestaurantDetailPage({
           )}
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-8 shadow-sm shadow-slate-900/5">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Reviews</h2>
+            <h2 className="text-3xl font-semibold">Reviews</h2>
             {reviewSummary.count > 0 ? (
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <StarRating rating={reviewSummary.average ?? 0} />
@@ -241,9 +260,9 @@ export default async function RestaurantDetailPage({
               No reviews yet. Be the first.
             </p>
           ) : (
-            <div className="mt-6 space-y-4 divide-y divide-slate-100">
+            <div className="mt-6 space-y-3">
               {reviews.map((review) => (
-                <div key={review.id} className="pt-4 first:pt-0">
+                <div key={review.id} className="rounded-2xl bg-slate-50 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <StarRating rating={review.rating} />

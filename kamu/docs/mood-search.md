@@ -138,6 +138,22 @@ from search_chunks;
 job runs in `cron.job_run_details` and the HTTP responses in
 `net._http_response`.
 
+## Area and price filters
+
+Search by meaning can't tell that "kottu in Colombo" means *only* Colombo,
+so `/search` has Area and Price dropdowns (`?area=&price=`). They're passed
+to `match_restaurants` as `filter_area` / `filter_price` (exact match, null
+= any; `migrations/20261027120000_search_filters.sql`), so the ranking and
+the AI summary only ever see restaurants that pass them.
+
+Why dropdowns instead of having Gemini read the area out of the sentence:
+even a tiny extraction call took 7-9s on the free tier, and it would have to
+run *before* the list, which currently shows in about 1.5s.
+
+Deploy order: `db push` first, then `functions deploy mood-search`. The old
+function still works against the new database function (the filters
+default to null); the new function doesn't work against the old one.
+
 ## Demo data
 
 `supabase/demo_data.sql` adds 58 fictional restaurants across Sri Lanka

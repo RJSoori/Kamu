@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   getRestaurantFilterOptions,
@@ -6,14 +5,25 @@ import {
   type Restaurant,
 } from "@/lib/data/restaurants";
 import { RestaurantFilters } from "@/components/site/RestaurantFilters";
-import { MoodSearchButton } from "@/components/site/MoodSearchButton";
+import { RestaurantCard } from "@/components/site/RestaurantCard";
+import { MoodSearchForm } from "@/components/site/MoodSearchForm";
+
+// One-tap starting points for people who don't know what they want yet.
+const MOOD_IDEAS = [
+  "Sunset by the beach",
+  "Cosy rainy-day café",
+  "Spicy street food",
+  "Romantic dinner",
+  "Hearty rice and curry",
+  "Quiet place to read",
+];
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ area?: string; cuisine?: string }>;
+  searchParams: Promise<{ area?: string; cuisine?: string; focus?: string }>;
 }) {
-  const { area, cuisine } = await searchParams;
+  const { area, cuisine, focus } = await searchParams;
 
   let restaurants: Restaurant[] = [];
   let filterOptions = { areas: [] as string[], cuisines: [] as string[] };
@@ -30,33 +40,56 @@ export default async function Home({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
-      <div className="mx-auto w-full max-w-6xl space-y-8">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="space-y-4">
-            <div>
-              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                Find restaurants by vibe, area, or cuisine.
-              </h1>
-              <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
-                This page loads restaurant records from Supabase and shows the
-                first live listing view.
-              </p>
-            </div>
-          </div>
+    <main className="px-6 pb-16 text-slate-900">
+      <section className="mx-auto max-w-3xl pb-14 pt-16 text-center sm:pt-24">
+        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cinnamon-600">
+          Eat by feeling
+        </p>
+        <h1 className="mt-4 text-balance text-4xl font-semibold leading-tight text-slate-900 sm:text-6xl">
+          What are you in the mood for today?
+        </h1>
+        <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">
+          Tell us how you feel, a craving or a vibe, and we&apos;ll find a
+          place across Sri Lanka that fits it.
+        </p>
+
+        {/* HeaderSearch's phone icon links here with ?focus=search. */}
+        <div id="mood-search" className="mx-auto mt-8 max-w-xl scroll-mt-24">
+          <MoodSearchForm autoFocus={focus === "search"} />
         </div>
 
-        <div className="flex flex-col items-start gap-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {MOOD_IDEAS.map((idea) => (
+            <Link
+              key={idea}
+              href={`/search?q=${encodeURIComponent(idea)}`}
+              className="rounded-full border border-slate-200 bg-white/70 px-4 py-1.5 text-sm text-slate-700 transition hover:border-slate-300 hover:bg-white hover:text-slate-900"
+            >
+              {idea}
+            </Link>
+          ))}
+        </div>
+
+        <p className="mt-6 text-sm text-slate-600">
+          Planning something bigger, like lunch then dessert, or somewhere
+          open late?{" "}
+          <Link
+            href="/ask"
+            className="font-semibold text-cinnamon-600 underline-offset-4 hover:underline"
+          >
+            Ask Kamu →
+          </Link>
+        </p>
+      </section>
+
+      <section className="mx-auto w-full max-w-6xl space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Not sure where to start?
-            </h2>
+            <h2 className="text-3xl font-semibold">Explore places</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Describe a vibe or craving and we&apos;ll match it to a
-              restaurant.
+              Or browse by area and cuisine.
             </p>
           </div>
-          <MoodSearchButton />
         </div>
 
         <RestaurantFilters
@@ -66,90 +99,27 @@ export default async function Home({
           selectedCuisine={cuisine}
         />
 
-        <section className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Restaurant directory</h2>
-              <p className="mt-2 text-sm text-slate-600">
-                Powered by your Supabase `restaurants` table.
-              </p>
-            </div>
-
-            {errorMessage ? (
-              <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-rose-900">
-                <h3 className="text-lg font-semibold">
-                  Unable to load restaurants
-                </h3>
-                <p className="mt-2 text-sm leading-6">{errorMessage}</p>
-              </div>
-            ) : restaurants.length === 0 ? (
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-slate-700">
-                <p className="text-base">
-                  {area || cuisine
-                    ? "No restaurants match these filters."
-                    : "No restaurants found yet. Add rows to the `restaurants` table in Supabase."}
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {restaurants.map((restaurant) => (
-                  <Link
-                    key={restaurant.id}
-                    href={`/restaurants/${restaurant.id}`}
-                    className="block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                  >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500">
-                          {restaurant.area || "Unknown area"}
-                        </p>
-                        <h3 className="mt-2 text-2xl font-semibold text-slate-900">
-                          {restaurant.name}
-                        </h3>
-                      </div>
-                      <div className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
-                        {restaurant.price_range || "-"}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="max-w-2xl text-sm leading-6 text-slate-600">
-                        {restaurant.vibe_description ||
-                          "No vibe description available."}
-                      </p>
-                      {restaurant.cover_photo_url ? (
-                        <Image
-                          src={restaurant.cover_photo_url}
-                          alt={`${restaurant.name} cover`}
-                          width={96}
-                          height={96}
-                          className="h-24 w-24 rounded-3xl object-cover"
-                        />
-                      ) : null}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
+        {errorMessage ? (
+          <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-rose-900">
+            <h3 className="text-lg font-semibold">
+              We couldn&apos;t load restaurants
+            </h3>
+            <p className="mt-2 text-sm leading-6">{errorMessage}</p>
           </div>
-
-          <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div>
-              <h2 className="text-xl font-semibold">Next steps</h2>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li>Build a mood search input and query matching restaurants</li>
-                <li>Add a map view once a Mapbox token is connected</li>
-                <li>Enable Supabase Auth and bucket lists</li>
-              </ul>
-            </div>
-            <div className="mt-6 rounded-3xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
-              This page uses a server-side Supabase query, so the data is
-              fetched securely for every request (filters opt the page into
-              dynamic rendering).
-            </div>
-          </aside>
-        </section>
-      </div>
+        ) : restaurants.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-slate-300 bg-white/60 p-10 text-center text-slate-600">
+            {area || cuisine
+              ? "No places match these filters yet. Try another area or cuisine."
+              : "No restaurants yet. Check back soon."}
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {restaurants.map((restaurant) => (
+              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   );
 }

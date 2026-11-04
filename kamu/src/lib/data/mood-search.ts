@@ -27,17 +27,21 @@ export interface MoodSearchResult {
  *
  * `answer` is Gemini's short recommendation built from those results, or
  * null when generation was skipped (`generate: false`) or failed (the results
- * still come back).
+ * still come back). `area` and `price` are optional exact-match filters.
  */
 export async function searchByMood(
   query: string,
-  { generate = true }: { generate?: boolean } = {},
+  {
+    generate = true,
+    area,
+    price,
+  }: { generate?: boolean; area?: string; price?: string } = {},
 ): Promise<{ results: MoodSearchResult[]; answer: string | null }> {
   const supabase = await createClient();
   const { data, error } = await supabase.functions.invoke<{
     results: MoodSearchResult[];
     answer?: string | null;
-  }>("mood-search", { body: { query, generate } });
+  }>("mood-search", { body: { query, generate, area, price } });
 
   if (error) {
     throw new Error(error.message);

@@ -9,3 +9,6 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# Supabase CLI cache from running it at the repo root (the project lives in kamu/supabase).
+supabase/.temp/

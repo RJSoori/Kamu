@@ -1,4 +1,5 @@
--- pgTAP tests for migrations/20261025120000_search_chunks.sql.
+-- pgTAP tests for migrations/20261025120000_search_chunks.sql (and the
+-- match_restaurants filters from 20261027120000_search_filters.sql).
 --
 -- Run against a local stack:
 --   npx supabase start
@@ -10,7 +11,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(7);
+select plan(9);
 
 -- Fixtures (as postgres): a public restaurant with a visible and a hidden
 -- menu item, and a review.
@@ -64,6 +65,21 @@ select is(
   (select count(*)::int from search_chunks where review_id = '00000000-0000-0000-0000-0000000000e3'),
   0,
   'a review with no text has no chunk'
+);
+
+-- match_restaurants filters (migrations/20261027120000_search_filters.sql).
+update search_chunks set embedding = array_fill(0.1, array[384])::vector;
+
+select ok(
+  exists(select 1 from match_restaurants(array_fill(0.1, array[384])::vector, 50, 'Kotte', null)
+         where name = 'Chunk cafe'),
+  'the area filter keeps restaurants in that area'
+);
+
+select ok(
+  not exists(select 1 from match_restaurants(array_fill(0.1, array[384])::vector, 50, 'Kotte', '$$$')
+             where name = 'Chunk cafe'),
+  'the price filter drops restaurants with a different price range'
 );
 
 -- Visibility as a logged-out visitor.

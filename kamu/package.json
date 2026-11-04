@@ -12,7 +12,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval:ask": "node --env-file=.env.local evals/ask-kamu.mjs",
+    "eval:listing": "node --experimental-strip-types --no-warnings --env-file=.env.local evals/listing-coach.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

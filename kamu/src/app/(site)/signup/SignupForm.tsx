@@ -13,7 +13,7 @@ export function SignupForm({ next }: { next: string }) {
   if (state.confirmationSent) {
     return (
       <div className="w-full max-w-sm space-y-3 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="text-xl font-semibold text-slate-900">Check your email</h1>
+        <h1 className="text-3xl font-semibold text-slate-900">Check your email</h1>
         <p className="text-sm text-slate-600">
           We sent a confirmation link. Click it to finish creating your
           account, then log in.
@@ -23,9 +23,9 @@ export function SignupForm({ next }: { next: string }) {
   }
 
   return (
-    <div className="w-full max-w-sm space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="w-full max-w-sm space-y-6 rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/5">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Sign up</h1>
+        <h1 className="text-3xl font-semibold text-slate-900">Sign up</h1>
         <p className="mt-1 text-sm text-slate-500">
           Save restaurants and leave reviews.
         </p>
@@ -49,7 +49,7 @@ export function SignupForm({ next }: { next: string }) {
             name="email"
             required
             autoComplete="email"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal text-slate-900"
+            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-normal text-slate-900"
           />
         </label>
 
@@ -61,7 +61,7 @@ export function SignupForm({ next }: { next: string }) {
             required
             minLength={8}
             autoComplete="new-password"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal text-slate-900"
+            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-normal text-slate-900"
           />
         </label>
 

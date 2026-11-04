@@ -16,15 +16,23 @@ Deno.serve(async (req: Request) => {
 
   let query: string;
   let generate: boolean;
+  let area: string | null;
+  let price: string | null;
   try {
     const body = await req.json();
     query = String(body.query ?? "").trim();
     // /search asks for the list first (generate: false) so it can render
     // straight away, then again for the answer, which streams in later.
     generate = body.generate !== false;
+    // Optional exact-match filters from the /search dropdowns.
+    area = body.area ? String(body.area).slice(0, 100) : null;
+    price = body.price ? String(body.price).slice(0, 10) : null;
     if (!query) throw new Error();
   } catch {
-    return json({ error: "Body must be { query: string }" }, 400);
+    return json(
+      { error: "Body must be { query: string, area?: string, price?: string }" },
+      400,
+    );
   }
   // Public endpoint: a mood is one sentence, and embedding huge text burns
   // the free tier's Edge Function time.
@@ -51,6 +59,8 @@ Deno.serve(async (req: Request) => {
   const { data, error } = await supabase.rpc("match_restaurants", {
     query_embedding: embedding,
     match_count: MATCH_COUNT,
+    filter_area: area,
+    filter_price: price,
   });
 
   if (error) {

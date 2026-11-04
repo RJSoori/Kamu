@@ -11,9 +11,9 @@ export function LoginForm({ next }: { next: string }) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
 
   return (
-    <div className="w-full max-w-sm space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="w-full max-w-sm space-y-6 rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/5">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Log in</h1>
+        <h1 className="text-3xl font-semibold text-slate-900">Log in</h1>
         <p className="mt-1 text-sm text-slate-500">
           Save restaurants and leave reviews.
         </p>
@@ -37,7 +37,7 @@ export function LoginForm({ next }: { next: string }) {
             name="email"
             required
             autoComplete="email"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal text-slate-900"
+            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-normal text-slate-900"
           />
         </label>
 
@@ -48,7 +48,7 @@ export function LoginForm({ next }: { next: string }) {
             name="password"
             required
             autoComplete="current-password"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal text-slate-900"
+            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-normal text-slate-900"
           />
         </label>
 

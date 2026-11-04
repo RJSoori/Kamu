@@ -20,7 +20,7 @@ export function RestaurantFilters({
   const hasFilters = Boolean(selectedArea || selectedCuisine);
 
   return (
-    <form className="flex flex-wrap items-end gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <form className="flex flex-wrap items-end gap-4 rounded-3xl border border-slate-200 bg-white/70 p-5 shadow-sm shadow-slate-900/5">
       <SelectField
         label="Area"
         name="area"
@@ -43,7 +43,7 @@ export function RestaurantFilters({
         {hasFilters ? (
           <Link
             href="/"
-            className="flex items-center rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+            className="flex items-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
           >
             Clear
           </Link>
@@ -53,7 +53,7 @@ export function RestaurantFilters({
   );
 }
 
-function SelectField({
+export function SelectField({
   label,
   name,
   defaultValue,
@@ -65,12 +65,12 @@ function SelectField({
   options: string[];
 }) {
   return (
-    <label className="block text-sm font-medium text-slate-700">
+    <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
       {label}
       <select
         name={name}
         defaultValue={defaultValue}
-        className="mt-1 block w-48 rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal text-slate-900"
+        className="mt-1 block w-48 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-normal text-slate-900 transition hover:border-slate-400"
       >
         <option value="">All</option>
         {options.map((option) => (
