@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { HiddenBadge, HideControl } from "@/components/HideControl";
+import { TriagePanel, type TriageSuggestion } from "@/components/TriagePanel";
 import { createClient } from "@/lib/supabase/server";
 import { setOwnerStatusAction } from "../owners/actions";
 import { setRestaurantHiddenAction } from "../restaurants/actions";
 import { setMenuItemHiddenAction } from "../restaurants/[id]/menu-items/actions";
 import { setReportStatusAction } from "./actions";
+
+// The triage agent's server action waits on several Gemini calls.
+export const maxDuration = 120;
 
 interface ReportRow {
   id: string;
@@ -20,6 +24,7 @@ interface ReportRow {
     hidden_by_admin: boolean;
   };
   menu_item: { id: string; item_name: string; hidden_by_admin: boolean } | null;
+  triage: { suggestion: TriageSuggestion; created_at: string } | null;
 }
 
 export default async function AdminReportsPage({
@@ -36,7 +41,8 @@ export default async function AdminReportsPage({
     .select(
       `id, reason, details, status, admin_notes, created_at,
        restaurant:restaurants(id, name, owner_id, hidden_by_admin),
-       menu_item:menu_items(id, item_name, hidden_by_admin)`,
+       menu_item:menu_items(id, item_name, hidden_by_admin),
+       triage:report_triage(suggestion, created_at)`,
     )
     .in("status", closed ? ["resolved", "dismissed"] : ["open", "reviewing"])
     .order("created_at", { ascending: false })
@@ -174,6 +180,14 @@ export default async function AdminReportsPage({
 
               {report.details ? (
                 <p className="whitespace-pre-line text-sm text-slate-700">{report.details}</p>
+              ) : null}
+
+              {!closed ? (
+                <TriagePanel
+                  reportId={report.id}
+                  suggestion={report.triage?.suggestion ?? null}
+                  createdAt={report.triage?.created_at ?? null}
+                />
               ) : null}
 
               {closed ? (

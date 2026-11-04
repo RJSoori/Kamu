@@ -33,3 +33,39 @@ export async function setReportStatusAction(
 
   revalidatePath("/", "layout");
 }
+
+export interface TriageState {
+  error: string | null;
+}
+
+/**
+ * Runs the triage agent (kamu/supabase/functions/triage-report) on one
+ * report and saves its suggestion for every admin to see. Advice only:
+ * nothing is hidden, suspended or closed here. Slow (30-90s on the free
+ * Gemini tier), hence maxDuration on the reports page.
+ */
+export async function triageReportAction(reportId: string): Promise<TriageState> {
+  const { supabase } = await requireAdmin();
+
+  const { data, error } = await supabase.functions.invoke<{
+    suggestion: Record<string, unknown>;
+  }>("triage-report", { body: { report_id: reportId } });
+
+  if (error || !data?.suggestion) {
+    // Non-2xx: the function's JSON body has a readable message.
+    const body = await error?.context?.json?.().catch(() => null);
+    return { error: body?.error ?? "The triage agent couldn't run. Try again." };
+  }
+
+  const { error: saveError } = await supabase.from("report_triage").upsert({
+    report_id: reportId,
+    suggestion: data.suggestion,
+    created_at: new Date().toISOString(),
+  });
+  if (saveError) {
+    return { error: saveError.message };
+  }
+
+  revalidatePath("/reports");
+  return { error: null };
+}
