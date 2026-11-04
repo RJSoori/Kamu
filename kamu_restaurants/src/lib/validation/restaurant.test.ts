@@ -26,7 +26,7 @@ const validRestaurant = {
   latitude: "",
   longitude: "",
   cuisine_type: "Cafe, Sri Lankan, ",
-  vibe_description: "Quiet garden cafe",
+  vibe_description: "Quiet garden cafe with soft lighting, good for reading alone. Try the pol roti with lunu miris.",
   is_published: "on",
 };
 
@@ -44,7 +44,7 @@ describe("parseRestaurantForm", () => {
         latitude: null,
         longitude: null,
         cuisine_type: ["Cafe", "Sri Lankan"],
-        vibe_description: "Quiet garden cafe",
+        vibe_description: "Quiet garden cafe with soft lighting, good for reading alone. Try the pol roti with lunu miris.",
         is_published: true,
         opening_hours: null,
         cover_photo_url: null,
@@ -68,6 +68,8 @@ describe("parseRestaurantForm", () => {
     ["only one coordinate", { latitude: "6.9", longitude: "" }, "both latitude and longitude"],
     ["too many cuisines", { cuisine_type: "a,b,c,d,e,f,g" }, "at most 6 cuisines"],
     ["long vibe", { vibe_description: "x".repeat(1001) }, "at most 1000 characters"],
+    ["missing vibe", { vibe_description: "  " }, "at least 80 characters"],
+    ["short vibe", { vibe_description: "Nice food!" }, "at least 80 characters"],
   ])("rejects a bad %s", (_label, override, message) => {
     const result = parseRestaurantForm(form({ ...validRestaurant, ...override }), PREFIX);
     expect(result.ok).toBe(false);

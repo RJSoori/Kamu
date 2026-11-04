@@ -86,10 +86,25 @@ export async function createMenuItem(
   }
 }
 
+/** Several at once (menu import): one round trip, all or nothing. */
+export async function createMenuItems(
+  restaurantId: string,
+  inputs: MenuItemInput[],
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("menu_items")
+    .insert(inputs.map((input) => ({ ...input, restaurant_id: restaurantId })));
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function updateMenuItem(
   restaurantId: string,
   id: string,
-  input: MenuItemInput,
+  input: Partial<MenuItemInput>,
 ): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase

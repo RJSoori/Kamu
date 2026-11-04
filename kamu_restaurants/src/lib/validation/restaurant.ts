@@ -185,6 +185,7 @@ export function parsePhotoUrl(
 // ---------------------------------------------------------------------
 
 export const PRICE_RANGES = ["$", "$$", "$$$"] as const;
+export const VIBE_MIN_LENGTH = 80;
 
 const restaurantSchema = z
   .object({
@@ -222,7 +223,17 @@ const restaurantSchema = z
         "Each cuisine must be at most 40 characters.",
       )
       .transform((list) => (list.length > 0 ? list : null)),
-    vibe_description: optionalText(1000, "Vibe description"),
+    // Mood search matches against this, so a listing needs a real one.
+    // Keep the minimum in step with MIN_DESCRIPTION_LENGTH in
+    // kamu/supabase/functions/_shared/listing.ts.
+    vibe_description: z
+      .string()
+      .trim()
+      .min(
+        VIBE_MIN_LENGTH,
+        `Vibe description must be at least ${VIBE_MIN_LENGTH} characters: describe the feel, who it suits and a dish to try.`,
+      )
+      .max(1000, "Vibe description must be at most 1000 characters."),
     is_published: z.boolean(),
   })
   .refine((value) => (value.latitude === null) === (value.longitude === null), {

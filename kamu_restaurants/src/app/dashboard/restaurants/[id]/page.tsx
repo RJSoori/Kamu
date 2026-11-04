@@ -8,6 +8,9 @@ import { canOwnerEdit, listingState } from "@/lib/owner-status";
 import { hoursFromStored } from "@/lib/validation/restaurant";
 import { updateRestaurantAction } from "../actions";
 
+// The description helper's actions wait on Gemini (up to ~90s for the coach).
+export const maxDuration = 120;
+
 export default async function EditRestaurantPage({
   params,
   searchParams,
@@ -72,6 +75,7 @@ export default async function EditRestaurantPage({
 
       <RestaurantForm
         action={updateRestaurantAction.bind(null, restaurant.id)}
+        restaurantId={restaurant.id}
         restaurant={restaurant}
         hours={hoursFromStored(restaurant.opening_hours)}
         ownerId={owner.id}

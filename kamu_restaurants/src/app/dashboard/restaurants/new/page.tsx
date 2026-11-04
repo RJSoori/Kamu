@@ -7,6 +7,9 @@ import { canOwnerEdit } from "@/lib/owner-status";
 import { hoursFromStored } from "@/lib/validation/restaurant";
 import { createRestaurantAction } from "../actions";
 
+// The description helper's actions wait on Gemini (up to ~90s for the coach).
+export const maxDuration = 120;
+
 export default async function NewRestaurantPage() {
   const { owner } = await requireOwner();
   if (!canOwnerEdit(owner.status)) {

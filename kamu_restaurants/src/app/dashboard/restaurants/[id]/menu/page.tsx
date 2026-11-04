@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteMenuItemButton } from "@/components/owner/DeleteMenuItemButton";
 import { ListingStateBadge } from "@/components/owner/ListingStateBadge";
+import { MenuImport } from "@/components/owner/MenuImport";
 import { MenuItemForm } from "@/components/owner/MenuItemForm";
 import { requireOwner } from "@/lib/auth/guard";
 import { getMenuItems, type OwnerMenuItem } from "@/lib/data/menu-items";
@@ -9,6 +10,9 @@ import { getMyRestaurant } from "@/lib/data/restaurants";
 import { formatLkr } from "@/lib/format";
 import { canOwnerEdit, listingState } from "@/lib/owner-status";
 import { createMenuItemAction, deleteMenuItemAction } from "../../actions";
+
+// Reading a menu photo waits on Gemini (up to ~90s).
+export const maxDuration = 120;
 
 function groupByCategory(items: OwnerMenuItem[]): [string, OwnerMenuItem[]][] {
   const groups = new Map<string, OwnerMenuItem[]>();
@@ -127,6 +131,13 @@ export default async function MenuPage({
           ))}
         </div>
       )}
+
+      {canEdit ? (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-slate-900">Add dishes from a photo</h2>
+          <MenuImport restaurantId={restaurant.id} ownerId={owner.id} />
+        </section>
+      ) : null}
 
       {canEdit ? (
         <section className="space-y-3">

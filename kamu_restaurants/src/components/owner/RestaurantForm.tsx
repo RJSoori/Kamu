@@ -3,7 +3,8 @@
 import { useActionState, useState } from "react";
 import type { DashboardFormState } from "@/app/dashboard/restaurants/actions";
 import type { OwnerStatus } from "@/lib/owner-status";
-import { PRICE_RANGES, type WeekHours } from "@/lib/validation/restaurant";
+import { PRICE_RANGES, VIBE_MIN_LENGTH, type WeekHours } from "@/lib/validation/restaurant";
+import { ListingHelper } from "./ListingHelper";
 import { OpeningHoursEditor } from "./OpeningHoursEditor";
 import { PhotoUploadField } from "./PhotoUploadField";
 import { submitWithoutReset } from "./submit-without-reset";
@@ -43,6 +44,7 @@ const inputClass =
 
 export function RestaurantForm({
   action,
+  restaurantId = null,
   restaurant,
   hours,
   ownerId,
@@ -52,6 +54,8 @@ export function RestaurantForm({
   readOnly = false,
 }: {
   action: FormAction;
+  /** Saved restaurants only: lets the AI helper read the menu and reviews. */
+  restaurantId?: string | null;
   restaurant?: RestaurantFormValues;
   hours: WeekHours;
   ownerId: string;
@@ -179,6 +183,8 @@ export function RestaurantForm({
           <textarea
             name="vibe_description"
             rows={5}
+            required
+            minLength={VIBE_MIN_LENGTH}
             maxLength={1000}
             defaultValue={restaurant?.vibe_description ?? ""}
             placeholder="Quiet garden cafe with soft lighting; good for reading alone or working through the morning. Popular with university students."
@@ -190,8 +196,11 @@ export function RestaurantForm({
             Describe the feel rather than the menu: the noise level, lighting,
             seating, who usually comes, and what it&apos;s good for (a date,
             working alone, a big family lunch). Be honest; it works better.
+            At least {VIBE_MIN_LENGTH} characters.
           </span>
         </label>
+
+        {readOnly ? null : <ListingHelper restaurantId={restaurantId} />}
 
         <OpeningHoursEditor initial={hours} disabled={readOnly} />
 
