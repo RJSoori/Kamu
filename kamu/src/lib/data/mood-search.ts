@@ -21,31 +21,23 @@ export interface MoodSearchResult {
  * which embeds `query` with the same gte-small model used to embed each
  * restaurant's vibe_description, then ranks restaurants by pgvector cosine
  * distance, against both the vibe description and the restaurant's menu
- * items and reviews (search_chunks). supabase.functions.invoke() forwards this client's session
- * automatically, so results respect the same published/admin visibility
- * RLS gives every other restaurant read.
- *
- * `answer` is Gemini's short recommendation built from those results, or
- * null when generation was skipped (`generate: false`) or failed (the results
- * still come back). `area` and `price` are optional exact-match filters.
+ * items and reviews (search_chunks). Retrieval only, no AI writing: /ask
+ * shows these instantly while the Ask Kamu agent works on the answer.
+ * supabase.functions.invoke() forwards this client's session, so results
+ * respect the same published/admin visibility RLS gives every other read.
  */
-export async function searchByMood(
-  query: string,
-  {
-    generate = true,
-    area,
-    price,
-  }: { generate?: boolean; area?: string; price?: string } = {},
-): Promise<{ results: MoodSearchResult[]; answer: string | null }> {
+export async function searchByMood(query: string): Promise<MoodSearchResult[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.functions.invoke<{
     results: MoodSearchResult[];
-    answer?: string | null;
-  }>("mood-search", { body: { query, generate, area, price } });
+  }>("mood-search", {
+    // The function's cap; a longer Ask Kamu question still searches fine.
+    body: { query: query.slice(0, 300) },
+  });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return { results: data?.results ?? [], answer: data?.answer ?? null };
+  return data?.results ?? [];
 }

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SparkleIcon } from "./AskKamuForm";
 
-// These pages already have the big search box.
-const PAGES_WITH_SEARCH = ["/", "/search"];
+// These pages already have the big Ask Kamu box.
+const PAGES_WITH_SEARCH = ["/", "/ask"];
 
 /**
- * Search from any page: a small box in the header on wider screens, and on
- * phones (too narrow for a box) an icon that jumps to the home page's search
- * box with the cursor in it. Plain GET form, same as MoodSearchForm.
+ * Ask Kamu from any page: a small box in the header on wider screens, and on
+ * phones (too narrow for a box) a button to /ask. Plain GET form, same as
+ * AskKamuForm.
  */
 export function HeaderSearch() {
   const pathname = usePathname();
@@ -17,42 +18,26 @@ export function HeaderSearch() {
 
   return (
     <>
-      <form action="/search" className="relative hidden md:block">
-        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <form action="/ask" className="relative hidden md:block">
+        <SparkleIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cinnamon-600" />
         <input
           type="text"
           name="q"
-          // Same cap as the mood-search Edge Function.
-          maxLength={300}
-          placeholder="Search by mood…"
-          aria-label="Search by mood"
+          // Same cap as the ask-kamu Edge Function.
+          maxLength={500}
+          placeholder="Ask Kamu…"
+          aria-label="Ask Kamu"
           required
           className="w-60 rounded-full border border-slate-200 bg-white/80 py-2 pl-9 pr-4 text-sm text-slate-900 transition placeholder:text-slate-400 focus:w-72 focus:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-200/70"
         />
       </form>
       <Link
-        href="/?focus=search#mood-search"
-        aria-label="Search by mood"
-        className="rounded-full p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 md:hidden"
+        href="/ask"
+        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 md:hidden"
       >
-        <SearchIcon className="h-5 w-5" />
+        <SparkleIcon className="h-4 w-4 text-cinnamon-600" />
+        Ask
       </Link>
     </>
-  );
-}
-
-function SearchIcon({ className }: { className: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-    </svg>
   );
 }

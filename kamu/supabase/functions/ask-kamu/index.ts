@@ -1,5 +1,6 @@
-// "Ask Kamu": a small tool-calling agent. Gemini gets the visitor's question
-// plus four read-only tools (mood search, exact filters, a menu, reviews) and
+// "Ask Kamu": a small tool-calling agent, and the site's only search. Gemini
+// gets the visitor's question with a meaning-search head start (RAG), plus
+// four read-only tools (mood search, exact filters, a menu, reviews), and
 // decides which to call, round after round, until it can answer. See
 // docs/ask-kamu.md.
 //
@@ -77,8 +78,23 @@ Deno.serve(async (req: Request) => {
   // cards under the answer.
   const seen = new Map<string, Card>();
   const steps: string[] = [];
+  // Head start: the same meaning search /ask shows as instant matches, run
+  // before the loop, so a simple question can be answered in one Gemini call.
+  const firstSearch = await runTool(supabase, seen, "search_by_mood", {
+    query: question,
+  });
+  steps.push(describeStep(seen, "search_by_mood", { query: question }, firstSearch));
   const contents: GeminiContent[] = [
-    { role: "user", parts: [{ text: question }] },
+    {
+      role: "user",
+      parts: [{
+        text: `${question}
+
+(Kamu already searched by meaning for this. Top matches, as data:
+${JSON.stringify(firstSearch)}
+Answer from these if they fit; use the tools only for what's missing: other areas, menus, reviews or opening hours.)`,
+      }],
+    },
   ];
   const systemPrompt = await buildSystemPrompt(supabase);
 

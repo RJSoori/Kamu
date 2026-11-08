@@ -27,7 +27,7 @@ export interface RestaurantCardData {
 }
 
 /**
- * The one restaurant card used by home, /search and the bucket list.
+ * The one restaurant card used by home, /ask and the bucket list.
  * `children` goes at the bottom for page-specific extras (match evidence,
  * saved date).
  */

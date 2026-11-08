@@ -6,7 +6,7 @@ import {
 } from "@/lib/data/restaurants";
 import { RestaurantFilters } from "@/components/site/RestaurantFilters";
 import { RestaurantCard } from "@/components/site/RestaurantCard";
-import { MoodSearchForm } from "@/components/site/MoodSearchForm";
+import { AskKamuForm } from "@/components/site/AskKamuForm";
 
 // One-tap starting points for people who don't know what they want yet.
 const MOOD_IDEAS = [
@@ -21,9 +21,9 @@ const MOOD_IDEAS = [
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ area?: string; cuisine?: string; focus?: string }>;
+  searchParams: Promise<{ area?: string; cuisine?: string }>;
 }) {
-  const { area, cuisine, focus } = await searchParams;
+  const { area, cuisine } = await searchParams;
 
   let restaurants: Restaurant[] = [];
   let filterOptions = { areas: [] as string[], cuisines: [] as string[] };
@@ -49,37 +49,25 @@ export default async function Home({
           What are you in the mood for today?
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">
-          Tell us how you feel, a craving or a vibe, and we&apos;ll find a
-          place across Sri Lanka that fits it.
+          Tell Kamu a vibe, a craving or a whole plan, and it&apos;ll find a
+          place across Sri Lanka that fits.
         </p>
 
-        {/* HeaderSearch's phone icon links here with ?focus=search. */}
-        <div id="mood-search" className="mx-auto mt-8 max-w-xl scroll-mt-24">
-          <MoodSearchForm autoFocus={focus === "search"} />
+        <div className="mx-auto mt-8 max-w-xl">
+          <AskKamuForm />
         </div>
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           {MOOD_IDEAS.map((idea) => (
             <Link
               key={idea}
-              href={`/search?q=${encodeURIComponent(idea)}`}
+              href={`/ask?q=${encodeURIComponent(idea)}`}
               className="rounded-full border border-slate-200 bg-white/70 px-4 py-1.5 text-sm text-slate-700 transition hover:border-slate-300 hover:bg-white hover:text-slate-900"
             >
               {idea}
             </Link>
           ))}
         </div>
-
-        <p className="mt-6 text-sm text-slate-600">
-          Planning something bigger, like lunch then dessert, or somewhere
-          open late?{" "}
-          <Link
-            href="/ask"
-            className="font-semibold text-cinnamon-600 underline-offset-4 hover:underline"
-          >
-            Ask Kamu →
-          </Link>
-        </p>
       </section>
 
       <section className="mx-auto w-full max-w-6xl space-y-6">

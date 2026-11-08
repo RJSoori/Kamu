@@ -71,23 +71,3 @@ export async function callGemini(
 export function textOf(content: GeminiContent): string {
   return content.parts.map((part) => part.text ?? "").join("").trim();
 }
-
-export async function generateText(
-  systemPrompt: string,
-  userPrompt: string,
-): Promise<string> {
-  const content = await callGemini(
-    {
-      generationConfig: {
-        temperature: 0.4,
-        // Thinking tokens count toward this cap, so leave headroom.
-        maxOutputTokens: 1024,
-      },
-    },
-    systemPrompt,
-    [{ role: "user", parts: [{ text: userPrompt }] }],
-  );
-  const text = textOf(content);
-  if (!text) throw new Error("Gemini returned no text");
-  return text;
-}

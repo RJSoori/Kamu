@@ -53,7 +53,7 @@ export function RestaurantFilters({
   );
 }
 
-export function SelectField({
+function SelectField({
   label,
   name,
   defaultValue,

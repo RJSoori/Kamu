@@ -28,6 +28,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Mood search merged into Ask Kamu; old links keep working (?q= carries over).
+  async redirects() {
+    return [{ source: "/search", destination: "/ask", permanent: true }];
+  },
   async headers() {
     return [
       {
